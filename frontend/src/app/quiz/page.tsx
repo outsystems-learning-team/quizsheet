@@ -3,15 +3,6 @@
 
 import { useState } from "react";
 
-type Question = {
-  id: number;              // 問題の一意なID
-  category: string;        // 質問のカテゴリー
-  question: string;        // 問題文のテキスト
-  choices: [string, string, string, string];  // 選択肢4つ
-  answerIndex: number;     // 正解の選択肢インデックス（0〜3）
-  explanation: string;     // 解説文
-};
-
 export default function QuizPage() {
   // 静的モックデータ
   const q: Question = {
