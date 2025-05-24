@@ -27,15 +27,27 @@ export default function StartPage() {
       setLoading(true);
       setError(null);
       try {
-        const qs = await fetchQuestions();
-        setQuestions(qs);
-        // カテゴリ一覧を生成し、すべて選択状態に
-        const cats = qs.map((q) => q.category);
-        const unique = Array.from(new Set(cats));
-        setAvailableCategories(unique);
-        setSelectedCategories(unique);
-      } catch (e: any) {
-        setError(e.message);
+        if (questions.length === 0) {
+          const qs = await fetchQuestions();
+          setQuestions(qs);
+          // カテゴリ一覧を生成し、すべて選択状態に
+          const cats = qs.map((q) => q.category);
+          const unique = Array.from(new Set(cats));
+          setAvailableCategories(unique);
+          setSelectedCategories(unique);
+        } else {
+          const cats = questions.map((q) => q.category);
+          const unique = Array.from(new Set(cats));
+          setAvailableCategories(unique);
+          setSelectedCategories(unique);
+        }
+      } catch (e: unknown) {
+        // 型ガードで Error かどうかを確認
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("不明なエラーが発生しました");
+        }
       } finally {
         setLoading(false);
       }
@@ -64,9 +76,6 @@ export default function StartPage() {
       return;
     }
     setError(null);
-
-    // QuizContext に登録（必要ならここで API 未取得分もセット）
-    setQuestions([]); // リセット
     // 選択されたカテゴリだけを questions からフィルタ or API 呼び出しなど
 
     // クエリパラメータ用意

@@ -1,7 +1,7 @@
 // frontend/app/api/quiz/route.ts
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET() {
   const GAS_SCRIPT_ID = process.env.GAS_SCRIPT_ID;
   if (!GAS_SCRIPT_ID) {
     return NextResponse.json(
