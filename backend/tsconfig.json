@@ -9,5 +9,8 @@
     "noImplicitAny": true,
     "types": ["google-apps-script"]
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../shared/**/*.d.ts"   // ここを .d.ts に合わせておく
+  ]
 }

@@ -3,8 +3,12 @@
  */
 function doGet(e: GoogleAppsScript.Events.DoGet): GoogleAppsScript.Content.TextOutput {
   try {
-    // スプレッドシートIDを指定
-    const SPREADSHEET_ID = '1cC8p5VXc6ofxdT1DkplyNoRMgevpj_RN9cNpU4iL0sM';
+    // スクリプト・プロパティまたは直書きでスプレッドシートIDを指定
+    const SPREADSHEET_ID = PropertiesService
+      .getScriptProperties()
+      .getProperty('SPREADSHEET_ID') || '1cC8p5VXc6ofxdT1DkplyNoRMgevpj_RN9cNpU4iL0sM';
+
+    // スプレッドシートを開く
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName('outsystems_sheet');
     if (!sheet) throw new Error('シート「outsystems_sheet」が見つかりません');
@@ -12,24 +16,30 @@ function doGet(e: GoogleAppsScript.Events.DoGet): GoogleAppsScript.Content.TextO
     // データ範囲を取得
     const rows = sheet.getDataRange().getValues();
 
-    // ヘッダー行を除いてデータを整形
-    const questions = rows.slice(1).map(row => ({
-      id: row[0] as number,
-      category: row[1] as string,
-      question: row[2] as string,
+    // ヘッダー行を除いてデータを型付きで整形
+    const questions: Question[] = rows.slice(1).map(row => ({
+      id: Number(row[0]),
+      category: String(row[1]),
+      question: String(row[2]),
       choices: [
-        row[3] as string,
-        row[4] as string,
-        row[5] as string,
-        row[6] as string
+        String(row[3]),
+        String(row[4]),
+        String(row[5]),
+        String(row[6])
       ],
-      answerIndex: row[7] as number,
-      explanation: row[8] as string
+      answerIndex: Number(row[7]),
+      explanation: String(row[8])
     }));
+
+    // レスポンス用オブジェクトを生成
+    const response: QuestionsResponse = {
+      count: questions.length,
+      questions
+    };
 
     // JSON レスポンスを返却
     return ContentService
-      .createTextOutput(JSON.stringify({ count: questions.length, questions }))
+      .createTextOutput(JSON.stringify(response))
       .setMimeType(ContentService.MimeType.JSON);
 
   } catch (error: any) {
