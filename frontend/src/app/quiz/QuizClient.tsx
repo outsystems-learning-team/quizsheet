@@ -2,7 +2,7 @@
 "use client";
 
 import { JSX, useState } from "react";
-import { useQuizClient } from "../hooks/useQuizClient";
+import { useQuizClient } from "../../hooks/useQuizClient";
 import { QuestionCard } from "../../components/QuestionCard";
 import { QuestionFooter } from "../../components/QuestionFooter";
 

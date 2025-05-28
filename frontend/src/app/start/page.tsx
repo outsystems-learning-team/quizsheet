@@ -2,7 +2,7 @@
 
 import { FormEvent, JSX, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuizSetup } from "../hooks/useQuizSetup";
+import { useQuizSetup } from "../../hooks/useQuizSetup";
 import { CategorySelector } from "../../components/CategorySelector";
 
 /**

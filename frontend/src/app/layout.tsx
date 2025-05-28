@@ -1,4 +1,4 @@
-import { QuizProvider } from "./context/QuizContext";
+import { QuizProvider } from "../context/QuizContext";
 import "./globals.css";
 import type { JSX, ReactNode } from "react";
 
