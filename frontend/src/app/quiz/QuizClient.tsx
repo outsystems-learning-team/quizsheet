@@ -34,7 +34,7 @@ export default function QuizClient(): JSX.Element {
   const [answeredCount, setAnsweredCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [maxStreak, setMaxStreak] = useState(0);
+  //const [maxStreak, setMaxStreak] = useState(0);
 
   const [categoryStats, setCategoryStats] = useState<Record<string, { total: number; correct: number }>>({});
 
@@ -77,7 +77,7 @@ export default function QuizClient(): JSX.Element {
       setCorrectCount((prev) => prev + 1);
       setStreak((prev) => {
        const newStreak = prev + 1;
-       setMaxStreak((m) => Math.max(m, newStreak));
+       //setMaxStreak((m) => Math.max(m, newStreak));
        return newStreak;
       });
     } else {
