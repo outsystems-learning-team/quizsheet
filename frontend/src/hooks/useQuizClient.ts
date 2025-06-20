@@ -56,7 +56,7 @@ export function useQuizClient() {
     }
 
     setQuestions(filtered);
-  }, [allQuestions, count, catsKey, rawCategories, router]);
+  }, [allQuestions, count, catsKey, router]);
 
   /**
    * フックの処理をもう一度走らせたい場合に呼ぶリセット関数
