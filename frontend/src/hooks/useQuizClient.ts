@@ -24,7 +24,7 @@ export function useQuizClient() {
   // クエリからカテゴリ配列を取得
   const rawCategories = params.getAll("category");
   // catsKey：依存配列安定化用
-  const catsKey = rawCategories.join(",");
+  //const catsKey = rawCategories.join(",");
 
   // このページで扱う問題リスト
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -56,7 +56,7 @@ export function useQuizClient() {
     }
 
     setQuestions(filtered);
-  }, [allQuestions, count, catsKey, router]);
+  }, [allQuestions, count, rawCategories, router]);
 
   /**
    * フックの処理をもう一度走らせたい場合に呼ぶリセット関数
