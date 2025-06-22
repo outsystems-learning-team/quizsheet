@@ -1,4 +1,3 @@
-// src/hooks/useQuizClient.ts
 "use client";
 
 import { useState, useEffect, useContext } from "react";
@@ -23,8 +22,8 @@ export function useQuizClient() {
   const count = Number(params.get("count") ?? "0");
   // クエリからカテゴリ配列を取得
   const rawCategories = params.getAll("category");
-  // catsKey：依存配列安定化用
-  //const catsKey = rawCategories.join(",");
+  // catsKey: カテゴリ配列を join した文字列
+  const catsKey = rawCategories.join(",");
 
   // このページで扱う問題リスト
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -56,7 +55,10 @@ export function useQuizClient() {
     }
 
     setQuestions(filtered);
-  }, [allQuestions, count, rawCategories, router]);
+    // catsKey を唯一のカテゴリ依存キーとして扱う
+    // rawCategories は catsKey で代替しているので依存配列から外す
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allQuestions, count, catsKey, router]);
 
   /**
    * フックの処理をもう一度走らせたい場合に呼ぶリセット関数
