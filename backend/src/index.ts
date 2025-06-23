@@ -1,5 +1,9 @@
-import { SPREAD_SHEET_NAME_LIST } from "@shared/constants";
+import {
+  SPREAD_SHEET_CATEGORY_LIST,
+  SPREAD_SHEET_NAME_LIST,
+} from "@shared/constants";
 import { getSheetNameList } from "./getSheetNameList";
+import { getCategoryNameLits } from "./getCategoryNameLits";
 /**
  * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却
  */
@@ -72,6 +76,19 @@ export function doPost(e: GoogleAppsScript.Events.DoPost) {
     case SPREAD_SHEET_NAME_LIST:
       getSheetNameList(body.key, output);
       return output;
+    case SPREAD_SHEET_CATEGORY_LIST:
+      if (body.targetSheet) {
+        getCategoryNameLits(body.key, body.targetSheet, output);
+        return output;
+      } else {
+        output.setContent(
+          JSON.stringify({
+            status: "error",
+            message: "Invalid targetSheet",
+          })
+        );
+      }
+
     default:
       output.setContent(
         JSON.stringify({

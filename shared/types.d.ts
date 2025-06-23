@@ -19,6 +19,7 @@ declare type Question = {
  */
 declare type QuestionsRequest = {
   key: string;
+  targetSheet?:string;
 };
 
 /**
