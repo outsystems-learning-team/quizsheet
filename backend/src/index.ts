@@ -1,9 +1,11 @@
 import {
   SPREAD_SHEET_CATEGORY_LIST,
   SPREAD_SHEET_NAME_LIST,
+  SPREAD_SHEET_SELECT_QUIZ,
 } from "@shared/constants";
 import { getSheetNameList } from "./getSheetNameList";
 import { getCategoryNameLits } from "./getCategoryNameLits";
+import { getSelectQuizList } from "./getSelectQuizList";
 /**
  * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却
  */
@@ -87,6 +89,25 @@ export function doPost(e: GoogleAppsScript.Events.DoPost) {
             message: "Invalid targetSheet",
           })
         );
+      }
+    case SPREAD_SHEET_SELECT_QUIZ:
+      if (!body.targetSheet) {
+        output.setContent(
+          JSON.stringify({
+            status: "error",
+            message: "Invalid targetSheet",
+          })
+        );
+      } else if (body.category === undefined || body.category.length === 0) {
+        output.setContent(
+          JSON.stringify({
+            status: "error",
+            message: "Invalid category",
+          })
+        );
+      } else {
+        getSelectQuizList(body.targetSheet, body.category, output);
+        return output;
       }
 
     default:

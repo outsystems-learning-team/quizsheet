@@ -1,6 +1,6 @@
-export const getCategoryNameLits = (
-  sheetName: string,
+export const getSelectQuizList = (
   targetSheetName: string,
+  categoryList: string[],
   output: GoogleAppsScript.Content.TextOutput
 ) => {
   try {
@@ -9,24 +9,37 @@ export const getCategoryNameLits = (
       process.env.SPREAD_SHEET_NAME ||
       "";
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName(sheetName);
+    const sheet = ss.getSheetByName(targetSheetName);
     if (!sheet) throw new Error("Sheet not found");
 
     const [header, ...rows] = sheet.getDataRange().getValues();
-    const data = rows
-      .filter((row) => row[1] === targetSheetName)
+    const data: Question[] = rows
+      .filter((row) => categoryList.includes(String(row[1])))
       .map((row) => {
         return {
-          id: row[0],
-          sheet_name: row[1],
-          category: row[2],
+          id: Number(row[0]),
+          category: String(row[1]),
+          question: String(row[2]),
+          choices: [
+            String(row[3]),
+            String(row[4]),
+            String(row[5]),
+            String(row[6]),
+          ],
+          answerIndex: Number(row[7]) - 1,
+          explanation: String(row[8]),
         };
       });
+
+    const responseData: QuestionsResponse = {
+      count: data.length,
+      questions: data,
+    };
 
     output.setContent(
       JSON.stringify({
         status: "ok",
-        data,
+        responseData,
       })
     );
   } catch (err: any) {
