@@ -1,4 +1,5 @@
 import { SPREAD_SHEET_NAME_LIST } from "@shared/constants";
+import { getSheetNameList } from "./getSheetNameList";
 /**
  * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却
  */
@@ -9,7 +10,8 @@ export function doGet(
     // スクリプト・プロパティまたは直書きでスプレッドシートIDを指定
     const SPREADSHEET_ID =
       PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID") ||
-      "1cC8p5VXc6ofxdT1DkplyNoRMgevpj_RN9cNpU4iL0sM";
+      process.env.SPREAD_SHEET_NAME ||
+      "";
 
     // スプレッドシートを開く
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -66,47 +68,20 @@ export function doPost(e: GoogleAppsScript.Events.DoPost) {
     return output;
   }
 
-  // key が sheet_name_list のときだけ処理
-  if (body.key !== SPREAD_SHEET_NAME_LIST) {
-    output.setContent(
-      JSON.stringify({
-        status: "error",
-        message: "Invalid key",
-      })
-    );
-    return output;
+  switch (body.key) {
+    case SPREAD_SHEET_NAME_LIST:
+      getSheetNameList(body.key, output);
+      return output;
+    default:
+      output.setContent(
+        JSON.stringify({
+          status: "error",
+          message: "Invalid key",
+        })
+      );
+      return output;
   }
-
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SPREAD_SHEET_NAME_LIST);
-    if (!sheet) throw new Error("Sheet not found");
-
-    const [header, ...rows] = sheet.getDataRange().getValues();
-    const data = rows.map((row) => ({
-      id: row[0],
-      key: row[1],
-      name: row[2],
-    }));
-
-    output.setContent(
-      JSON.stringify({
-        status: "ok",
-        data,
-      })
-    );
-  } catch (err: any) {
-    output.setContent(
-      JSON.stringify({
-        status: "error",
-        message: err.message || "Unknown error",
-      })
-    );
-  }
-
-  return output;
 }
 
 void [doGet, doPost];
 Object.assign(globalThis as any, { doGet, doPost });
-
