@@ -1,7 +1,8 @@
+import { SPREAD_SHEET_NAME_LIST } from "@shared/constants";
 /**
  * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却
  */
-function doGet(
+export function doGet(
   e: GoogleAppsScript.Events.DoGet
 ): GoogleAppsScript.Content.TextOutput {
   try {
@@ -12,7 +13,7 @@ function doGet(
 
     // スプレッドシートを開く
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName("outsystems_sheet");
+    const sheet = ss.getSheetByName("associate_reactive_developer");
     if (!sheet) throw new Error("シート「outsystems_sheet」が見つかりません");
 
     // データ範囲を取得
@@ -44,3 +45,68 @@ function doGet(
     ).setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+// src/index.ts
+
+export function doPost(e: GoogleAppsScript.Events.DoPost) {
+  const output = ContentService.createTextOutput().setMimeType(
+    ContentService.MimeType.JSON
+  );
+
+  let body: QuestionsRequest;
+  try {
+    body = JSON.parse(e.postData.contents);
+  } catch {
+    output.setContent(
+      JSON.stringify({
+        status: "error",
+        message: "Invalid JSON",
+      })
+    );
+    return output;
+  }
+
+  // key が sheet_name_list のときだけ処理
+  if (body.key !== SPREAD_SHEET_NAME_LIST) {
+    output.setContent(
+      JSON.stringify({
+        status: "error",
+        message: "Invalid key",
+      })
+    );
+    return output;
+  }
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SPREAD_SHEET_NAME_LIST);
+    if (!sheet) throw new Error("Sheet not found");
+
+    const [header, ...rows] = sheet.getDataRange().getValues();
+    const data = rows.map((row) => ({
+      id: row[0],
+      key: row[1],
+      name: row[2],
+    }));
+
+    output.setContent(
+      JSON.stringify({
+        status: "ok",
+        data,
+      })
+    );
+  } catch (err: any) {
+    output.setContent(
+      JSON.stringify({
+        status: "error",
+        message: err.message || "Unknown error",
+      })
+    );
+  }
+
+  return output;
+}
+
+void [doGet, doPost];
+Object.assign(globalThis as any, { doGet, doPost });
+

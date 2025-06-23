@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack.config.js",
+    "push": "npm run build && npx clasp push"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +13,11 @@
   "devDependencies": {
     "@google/clasp": "^3.0.4-alpha",
     "@types/google-apps-script": "^1.0.97",
-    "typescript": "^5.8.3"
+    "copy-webpack-plugin": "^13.0.0",
+    "dotenv-webpack": "^8.1.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1"
   }
 }

@@ -1,0 +1,1 @@
+export const SPREAD_SHEET_NAME_LIST = "sheet_name_list"
