@@ -1,3 +1,9 @@
+import {
+  SPREAD_SHEET_NAME_LIST,
+  SPREAD_SHEET_CATEGORY_LIST,
+  SPREAD_SHEET_SELECT_QUIZ,
+} from "./constants";
+
 /**
  * 質問データの型定義をまとめた共有ファイル（型エイリアス版）
  */
@@ -27,21 +33,21 @@ declare type QuestionsResponse = {
  */
 declare type QuestionsRequest = {
   key:
-    | SPREAD_SHEET_NAME_LIST
-    | SPREAD_SHEET_CATEGORY_LIST
-    | SPREAD_SHEET_SELECT_QUIZ;
+    | typeof SPREAD_SHEET_NAME_LIST
+    | typeof SPREAD_SHEET_CATEGORY_LIST
+    | typeof SPREAD_SHEET_SELECT_QUIZ;
   targetSheet?: string;
   category?: string[];
 };
 
 declare type SheetNameList = {
-  id: Nunber;
+  id: number;
   sheetName: String;
   text: String;
 };
 
 declare type CategoryNameList = {
-  id: Nunber;
+  id: number;
   sheetName: String;
   categoryName: String;
 };

@@ -1,3 +1,5 @@
+import { Question, QuestionsResponse } from "../../shared/types";
+
 export const getSelectQuizList = (
   targetSheetName: string,
   categoryList: string[],

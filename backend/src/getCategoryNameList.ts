@@ -1,3 +1,5 @@
+import { CategoryNameList } from "../../shared/types";
+
 export const getCategoryNameLits = (
   sheetName: string,
   targetSheetName: string,

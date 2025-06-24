@@ -3,6 +3,7 @@ import {
   SPREAD_SHEET_NAME_LIST,
   SPREAD_SHEET_SELECT_QUIZ,
 } from "@shared/constants";
+import { Question, QuestionsResponse, QuestionsRequest } from "@shared/types";
 import { getSheetNameList } from "./getSheetNameList";
 import { getCategoryNameLits } from "./getCategoryNameList";
 import { getSelectQuizList } from "./getSelectQuizList";

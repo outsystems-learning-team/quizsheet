@@ -1,3 +1,5 @@
+import { SheetNameList } from "../../shared/types";
+
 export const getSheetNameList = (
   sheetName: string,
   output: GoogleAppsScript.Content.TextOutput
