@@ -9,9 +9,7 @@ import { getSelectQuizList } from "./getSelectQuizList";
 /**
  * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却
  */
-export function doGet(
-  e: GoogleAppsScript.Events.DoGet
-): GoogleAppsScript.Content.TextOutput {
+export function doGet(): GoogleAppsScript.Content.TextOutput {
   try {
     // スクリプト・プロパティまたは直書きでスプレッドシートIDを指定
     const SPREADSHEET_ID =
@@ -44,22 +42,22 @@ export function doGet(
     };
 
     // JSON レスポンスを返却
-    return ContentService.createTextOutput(
-      JSON.stringify(response)
-    ).setMimeType(ContentService.MimeType.JSON);
-  } catch (error: any) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ error: error.message })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(
+      ContentService.MimeType.JSON
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+
+    return ContentService.createTextOutput(JSON.stringify({ error: message })).setMimeType(
+      ContentService.MimeType.JSON
+    );
   }
 }
 
 // src/index.ts
 
 export function doPost(e: GoogleAppsScript.Events.DoPost) {
-  const output = ContentService.createTextOutput().setMimeType(
-    ContentService.MimeType.JSON
-  );
+  const output = ContentService.createTextOutput().setMimeType(ContentService.MimeType.JSON);
 
   let body: QuestionsRequest;
   try {
@@ -122,4 +120,4 @@ export function doPost(e: GoogleAppsScript.Events.DoPost) {
 }
 
 void [doGet, doPost];
-Object.assign(globalThis as any, { doGet, doPost });
+Object.assign(globalThis as Record<string, unknown>, { doGet, doPost });

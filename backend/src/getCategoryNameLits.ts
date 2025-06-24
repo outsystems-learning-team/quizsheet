@@ -12,7 +12,7 @@ export const getCategoryNameLits = (
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) throw new Error("Sheet not found");
 
-    const [header, ...rows] = sheet.getDataRange().getValues();
+    const [...rows] = sheet.getDataRange().getValues();
     const data = rows
       .filter((row) => row[1] === targetSheetName)
       .map((row) => {
@@ -29,13 +29,9 @@ export const getCategoryNameLits = (
         data,
       })
     );
-  } catch (err: any) {
-    output.setContent(
-      JSON.stringify({
-        status: "error",
-        message: err.message || "Unknown error",
-      })
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    output.setContent(JSON.stringify({ status: "error", message }));
   }
 
   return output;

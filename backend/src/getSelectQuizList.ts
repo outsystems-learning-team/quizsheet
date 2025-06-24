@@ -12,7 +12,7 @@ export const getSelectQuizList = (
     const sheet = ss.getSheetByName(targetSheetName);
     if (!sheet) throw new Error("Sheet not found");
 
-    const [header, ...rows] = sheet.getDataRange().getValues();
+    const [...rows] = sheet.getDataRange().getValues();
     const data: Question[] = rows
       .filter((row) => categoryList.includes(String(row[1])))
       .map((row) => {
@@ -20,12 +20,7 @@ export const getSelectQuizList = (
           id: Number(row[0]),
           category: String(row[1]),
           question: String(row[2]),
-          choices: [
-            String(row[3]),
-            String(row[4]),
-            String(row[5]),
-            String(row[6]),
-          ],
+          choices: [String(row[3]), String(row[4]), String(row[5]), String(row[6])],
           answerIndex: Number(row[7]) - 1,
           explanation: String(row[8]),
         };
@@ -42,14 +37,9 @@ export const getSelectQuizList = (
         responseData,
       })
     );
-  } catch (err: any) {
-    output.setContent(
-      JSON.stringify({
-        status: "error",
-        message: err.message || "Unknown error",
-      })
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    output.setContent(JSON.stringify({ status: "error", message }));
   }
-
   return output;
 };
