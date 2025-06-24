@@ -4,7 +4,7 @@ import {
   SPREAD_SHEET_SELECT_QUIZ,
 } from "@shared/constants";
 import { getSheetNameList } from "./getSheetNameList";
-import { getCategoryNameLits } from "./getCategoryNameLits";
+import { getCategoryNameLits } from "./getCategoryNameList";
 import { getSelectQuizList } from "./getSelectQuizList";
 /**
  * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却

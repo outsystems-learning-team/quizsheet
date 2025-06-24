@@ -15,24 +15,33 @@ declare type Question = {
 };
 
 /**
- * API リクエスト全体を表す型
+ *  全問分の情報を表す型
  */
-declare type QuestionsRequest = {
-  key: string;
-  targetSheet?:string;
-  category?:string[];
+declare type QuestionsResponse = {
+  count: number; //総問題数
+  questions: Question[]; // 質問データの配列
 };
 
 /**
- * API レスポンス全体を表す型
+ * API リクエスト全体を表す型
  */
-declare type QuestionsResponse = {
-  /**
-   * 総問題数
-   */
-  count: number;
-  /**
-   * 質問データの配列
-   */
-  questions: Question[];
+declare type QuestionsRequest = {
+  key:
+    | SPREAD_SHEET_NAME_LIST
+    | SPREAD_SHEET_CATEGORY_LIST
+    | SPREAD_SHEET_SELECT_QUIZ;
+  targetSheet?: string;
+  category?: string[];
+};
+
+declare type SheetNameList = {
+  id: Nunber;
+  sheetName: String;
+  text: String;
+};
+
+declare type CategoryNameList = {
+  id: Nunber;
+  sheetName: String;
+  categoryName: String;
 };

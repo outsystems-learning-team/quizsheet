@@ -13,13 +13,13 @@ export const getCategoryNameLits = (
     if (!sheet) throw new Error("Sheet not found");
 
     const [...rows] = sheet.getDataRange().getValues();
-    const data = rows
+    const data: CategoryNameList[] = rows
       .filter((row) => row[1] === targetSheetName)
       .map((row) => {
         return {
           id: row[0],
-          sheet_name: row[1],
-          category: row[2],
+          sheetName: row[1],
+          categoryName: row[2],
         };
       });
 

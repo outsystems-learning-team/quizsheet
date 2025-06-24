@@ -12,10 +12,10 @@ export const getSheetNameList = (
     if (!sheet) throw new Error("Sheet not found");
 
     const [...rows] = sheet.getDataRange().getValues();
-    const data = rows.map((row) => ({
-      id: row[0],
-      key: row[1],
-      name: row[2],
+    const data: SheetNameList[] = rows.map((row) => ({
+      id: Number(row[0]),
+      sheetName: String(row[1]),
+      text: String(row[2]),
     }));
 
     output.setContent(
