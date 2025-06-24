@@ -18,8 +18,7 @@ export async function fetchQuestions(): Promise<Question[]> {
 
   // レスポンスボディを JSON としてパース
   // 戻り値は { questions: Question[] } 形式を期待
-  const json = (await res.json()) as { questions: Question[] };
-
+  const json = (await res.json()).data as { questions: Question[] };
   // パースしたオブジェクトから questions 配列を抽出して返却
   return json.questions;
 }
