@@ -1,47 +1,34 @@
 import { Question, QuestionsResponse } from "../../shared/types";
+import { createQuestions } from "./utils/createQuestions";
+import { error, ok } from "./utils/output";
+import { getAllRowsIncludingHeader } from "./utils/sheet";
 
+/**
+ * 指定シートからカテゴリー条件で絞り込んだクイズ一覧を返す。
+ *
+ * @param targetSheet
+ * @param categoryList
+ * @returns
+ */
 export const getSelectQuizList = (
-  targetSheetName: string,
-  categoryList: string[],
-  output: GoogleAppsScript.Content.TextOutput
-) => {
+  targetSheet: string,
+  categoryList: string[]
+): GoogleAppsScript.Content.TextOutput => {
   try {
-    const SPREADSHEET_ID =
-      PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID") ||
-      process.env.SPREAD_SHEET_NAME ||
-      "";
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName(targetSheetName);
-    if (!sheet) throw new Error("Sheet not found");
+    // ── 行データをカテゴリでフィルタ ＋ Question 型へ変換 ──────────
+    const rows = getAllRowsIncludingHeader(targetSheet);
 
-    const [...rows] = sheet.getDataRange().getValues();
-    const data: Question[] = rows
-      .filter((row) => categoryList.includes(String(row[1])))
-      .map((row) => {
-        return {
-          id: Number(row[0]),
-          category: String(row[1]),
-          question: String(row[2]),
-          choices: [String(row[3]), String(row[4]), String(row[5]), String(row[6])],
-          answerIndex: Number(row[7]) - 1,
-          explanation: String(row[8]),
-        };
-      });
+    const questions: Question[] = createQuestions(rows, categoryList);
 
-    const responseData: QuestionsResponse = {
-      count: data.length,
-      questions: data,
+    const response: QuestionsResponse = {
+      count: questions.length,
+      questions,
     };
 
-    output.setContent(
-      JSON.stringify({
-        status: "ok",
-        responseData,
-      })
-    );
+    // ── 正常レスポンス ────────────────────────────────
+    return ok(response);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    output.setContent(JSON.stringify({ status: "error", message }));
+    // 例外を安全にメッセージへ変換
+    return error(err instanceof Error ? err.message : "Unknown error");
   }
-  return output;
 };

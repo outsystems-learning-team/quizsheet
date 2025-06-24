@@ -1,35 +1,28 @@
 import { SheetNameList } from "../../shared/types";
+import { getAllRowsIncludingHeader } from "./utils/sheet";
+import { ok, error } from "./utils/output";
 
-export const getSheetNameList = (
-  sheetName: string,
-  output: GoogleAppsScript.Content.TextOutput
-) => {
+/**
+ * 指定シートの全行を `SheetNameList` 型に変換して JSON で返す。
+ *
+ * @param key
+ * @returns
+ */
+export const getSheetNameList = (key: string) => {
   try {
-    const SPREADSHEET_ID =
-      PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID") ||
-      process.env.SPREAD_SHEET_NAME ||
-      "";
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName(sheetName);
-    if (!sheet) throw new Error("Sheet not found");
-
-    const [...rows] = sheet.getDataRange().getValues();
-    const data: SheetNameList[] = rows.map((row) => ({
-      id: Number(row[0]),
-      sheetName: String(row[1]),
-      text: String(row[2]),
-    }));
-
-    output.setContent(
-      JSON.stringify({
-        status: "ok",
-        data,
+    // ── 行データを型変換 ───────────────────────────────────
+    const rows = getAllRowsIncludingHeader(key);
+    const data: SheetNameList[] = rows.map(
+      (row): SheetNameList => ({
+        id: Number(row[0]),
+        sheetName: String(row[1]),
+        text: String(row[2]),
       })
     );
+    // ── 正常レスポンス ───────────────────────────────────
+    return ok(data);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    output.setContent(JSON.stringify({ status: "error", message }));
+    // 例外を安全にメッセージへ変換
+    return error(err instanceof Error ? err.message : "Unknown error");
   }
-
-  return output;
 };

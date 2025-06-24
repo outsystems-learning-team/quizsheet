@@ -5,10 +5,6 @@ import {
 } from "./constants";
 
 /**
- * 質問データの型定義をまとめた共有ファイル（型エイリアス版）
- */
-
-/**
  * 1問分の情報を表す型
  */
 declare type Question = {
