@@ -1,3 +1,5 @@
+import {Question} from "../../../shared/types"
+
 /**
  * quiz API から問題一覧を取得する非同期関数。
  *

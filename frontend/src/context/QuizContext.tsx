@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useState, ReactNode, JSX } from "react";
+import {Question} from "../../../shared/types"
 
 /**
  * QuizContext で管理する状態の型定義

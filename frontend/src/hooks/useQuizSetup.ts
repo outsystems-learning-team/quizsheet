@@ -3,6 +3,7 @@
 import { useState, useEffect, useContext } from "react";
 import { QuizContext } from "../context/QuizContext";
 import { fetchQuestions } from "../lib/api";
+import {Question} from "../../../shared/types"
 
 /**
  * クイズ開始前のデータ取得＆カテゴリ選択ロジックを提供するカスタムフック

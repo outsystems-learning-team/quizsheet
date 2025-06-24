@@ -3,6 +3,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { QuizContext } from "../context/QuizContext";
+import {Question} from "../../../shared/types"
 
 /**
  * URL クエリ → フィルタ／シャッフル／切り詰めを行い、
