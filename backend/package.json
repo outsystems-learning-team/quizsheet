@@ -8,7 +8,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@quizsheet/shared": "workspace:*",
+    "@quizsheet/shared": "file:../sharedcd",
     "@google/clasp": "^3.0.4-alpha",
     "@types/google-apps-script": "^1.0.97",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
