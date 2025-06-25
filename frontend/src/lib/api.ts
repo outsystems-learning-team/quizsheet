@@ -1,24 +1,19 @@
-import {Question} from "../../../shared/types"
+import {QuestionsRequest} from "../../../shared/types"
+/* utils/fetchQuizApi.ts ------------------------------------------- */
+type ApiResponse<Success> =
+  | { status: 'ok'; data: Success }
+  | { status: 'error'; message: string };
 
-/**
- * quiz API から問題一覧を取得する非同期関数。
- *
- * @returns {Promise<Question[]>} 取得した問題データの配列を持つ Promise。
- * @throws {Error} HTTP ステータスが OK 以外の場合に、ステータスコードを含むエラーメッセージを投げる。
- */
-export async function fetchQuestions(): Promise<Question[]> {
-  // /api/quiz エンドポイントへ GET リクエストを送信
-  const res = await fetch(`/api/quiz`);
+/** GAS 転送 API（/api/quiz）を叩いて JSON を返す共通ヘルパー */
+export async function fetchQuizApi<T>(body: QuestionsRequest): Promise<T> {
+  const res = await fetch('/api/quiz', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 
-  // レスポンスの HTTP ステータスをチェック
-  if (!res.ok) {
-    // ステータスが 200 系でない場合はエラーをスロー
-    throw new Error(`問題データの取得に失敗しました: ${res.status}`);
-  }
+  const json: ApiResponse<T> = await res.json();
 
-  // レスポンスボディを JSON としてパース
-  // 戻り値は { questions: Question[] } 形式を期待
-  const json = (await res.json()).data as { questions: Question[] };
-  // パースしたオブジェクトから questions 配列を抽出して返却
-  return json.questions;
+  if (json.status !== 'ok') throw new Error(json.message);
+  return json.data;
 }

@@ -1,73 +1,130 @@
 "use client";
 
-import { FormEvent, JSX, useState } from "react";
+import type { CategoryNameList, SheetNameList } from "@shared/types"; // 共有型があれば
 import { useRouter } from "next/navigation";
-import { useQuizSetup } from "../../hooks/useQuizSetup";
-import { CategorySelector } from "../../components/CategorySelector";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { fetchQuizApi } from "../../lib/api";
 
-/**
- * 出題設定ページコンポーネント
- *
- * - 問題数とカテゴリをユーザーが選択可能
- * - 選択条件に従いクイズページへ遷移
- *
- * @returns {JSX.Element} 出題設定フォームの JSX
- */
-export default function StartPage(): JSX.Element {
-  // Next.js のルーターを取得（プログラム的ページ遷移用）
+export default function StartPage() {
   const router = useRouter();
 
-  // カスタムフックから取得するステートと操作関数
-  const {
-    loading,              // データ読み込み中フラグ
-    error,                // エラーメッセージ
-    availableCategories,  // 利用可能なカテゴリ一覧
-    selectedCategories,   // ユーザーが選択したカテゴリ一覧
-    toggleCategory,       // カテゴリ選択/解除トグル関数
-    selectAll,            // 全カテゴリを選択する関数
-    clearAll,             // 全カテゴリ選択解除関数
-  } = useQuizSetup();
+  /* ------------------------------  state  ------------------------------ */
+  const [numQuestions, setNumQuestions] = useState(20);
+  const [sheets, setSheets] = useState<SheetNameList[]>([]);
+  const [categories, setCategories] = useState<CategoryNameList[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // ユーザー入力による出題数ステート（デフォルト20問）
-  const [numQuestions, setNumQuestions] = useState<number>(20);
+  /* ----------------------------  fetch once  --------------------------- */
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const sheetList = await fetchQuizApi<SheetNameList[]>({ key: "sheet_name_list" });
+        setSheets(sheetList);
 
-  /**
-   * 「スタート」ボタン押下時のフォーム送信ハンドラ
-   *
-   * - バリデーション：問題数が1以上／カテゴリが1つ以上
-   * - クエリパラメータを生成して `/quiz` ページへ遷移
-   *
-   * @param {FormEvent} e - フォーム送信イベント
-   */
+        if (sheetList.length) {
+          const catList = await fetchQuizApi<CategoryNameList[]>({
+            key: "category_list",
+            targetSheet: sheetList[0].sheetName,
+          });
+          setCategories(catList);
+        }
+
+        setError(null);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  /* ---------------------------  form submit  --------------------------- */
   const handleStart = (e: FormEvent) => {
     e.preventDefault();
-    // 問題数バリデーション
-    if (numQuestions <= 0) return;
-    // カテゴリ選択バリデーション
-    if (selectedCategories.length === 0) return;
-    // クエリパラメータ生成
-    const params = new URLSearchParams();
-    params.append("count", String(numQuestions));
-    selectedCategories.forEach((cat) => params.append("category", cat));
-    // クイズページへ遷移
-    router.push(`/quiz?${params.toString()}`);
+    router.push(`/quiz?num=${numQuestions}`); // 必要に応じて他クエリ追加
   };
 
+  /** チェックボックスの選択／解除をトグル */
+  const handleCategoryToggle = (e: ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    setSelectedCategories(prev =>
+      e.target.checked
+        ? [...prev, name]
+        : prev.filter(c => c !== name)
+    );
+  };
+
+  /** 全て選択 */
+  const handleSelectAll = () => {
+    setSelectedCategories(categories.map(c => c.categoryName));
+  };
+
+  /** 全て解除 */
+  const handleDeselectAll = () => {
+    setSelectedCategories([]);
+  };
+
+  /* ------------------------------  view  ------------------------------- */
   return (
-    // フォーム全体のレイアウト設定
     <form
       onSubmit={handleStart}
       className="max-w-md sm:max-w-lg md:max-w-xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow"
     >
-      {/* タイトル */}
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">
-        出題設定
-      </h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">出題設定</h1>
 
-      {/* 読み込み中メッセージ */}
-      {loading && <p className="text-center mb-4">読み込み中…</p>}
-      {/* エラーメッセージ */}
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {loading && <p className="mb-4 text-center">ロード中...</p>}
+      {error && <p className="mb-4 text-red-500 text-center">{error}</p>}
+
+      {!loading && !error && (
+        <div className="mb-4">
+          <label className="block mb-1">対象問題</label>
+          <select className="w-full border rounded p-2">
+            {sheets.map(s => (
+              <option key={s.id} value={String(s.sheetName)}>
+                {s.text}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* 全選択／全解除ボタン */}
+      <div className="flex justify-end mb-2">
+        <button
+          type="button"
+          onClick={handleSelectAll}
+          className="text-sm sm:text-base mr-2 text-[#fa173d]"
+        >
+          全て選択
+        </button>
+        <button
+          type="button"
+          onClick={handleDeselectAll}
+          className="text-sm sm:text-base text-[#fa173d]"
+        >
+          全て解除
+        </button>
+      </div>
+
+      {/* カテゴリチェックボックス */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {categories.map(cat => (
+          <label key={cat.id} className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              value={cat.categoryName}
+              checked={selectedCategories.includes(cat.categoryName)}
+              onChange={handleCategoryToggle}
+              className="w-4 h-4"
+            />
+            <span>{cat.categoryName}</span>
+          </label>
+        ))}
+      </div>
 
       {/* 問題数入力欄 */}
       <div className="mb-4">
@@ -79,33 +136,17 @@ export default function StartPage(): JSX.Element {
           type="number"
           min={1}
           value={numQuestions}
-          onChange={(e) => setNumQuestions(Number(e.target.value))}
-          disabled={loading}
+          onChange={e => setNumQuestions(Number(e.target.value))}
           className="w-full border border-gray-300 rounded p-2"
         />
       </div>
 
-      {/* カテゴリ選択コンポーネント */}
-      <CategorySelector
-        availableCategories={availableCategories}
-        selectedCategories={selectedCategories}
-        toggleCategory={toggleCategory}
-        loading={loading}
-        selectAll={selectAll}
-        clearAll={clearAll}
-      />
-
-      {/* スタートボタン */}
       <button
         type="submit"
-        disabled={loading || selectedCategories.length === 0 || numQuestions <= 0}
-        className={`w-full py-3 rounded-lg text-white ${
-          loading || selectedCategories.length === 0 || numQuestions <= 0
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-[#fa173d] hover:opacity-90"
-        }`}
+        className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
+        disabled={loading || !!error}
       >
-        {loading ? "読み込み中…" : "スタート"}
+        スタート
       </button>
     </form>
   );
