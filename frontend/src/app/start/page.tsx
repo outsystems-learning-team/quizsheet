@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import type { CategoryNameList, SheetNameList } from "@shared/types"; // 共有型があれば
 import { useRouter } from "next/navigation";
-import type { SheetNameList, CategoryNameList } from "@shared/types"; // 共有型があれば
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { fetchQuizApi } from "../../lib/api";
 
 export default function StartPage() {
@@ -14,19 +14,15 @@ export default function StartPage() {
   const [categories, setCategories] = useState<CategoryNameList[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
-    /** ステップ① シート一覧 → ステップ② カテゴリ一覧 */
     const load = async () => {
       try {
-        // ① シート一覧取得
-        const sheetList = await fetchQuizApi<SheetNameList[]>({
-          key: "sheet_name_list",
-        });
+        const sheetList = await fetchQuizApi<SheetNameList[]>({ key: "sheet_name_list" });
         setSheets(sheetList);
 
-        // ② 先頭シートのカテゴリ取得（シートが存在する場合のみ）
         if (sheetList.length) {
           const catList = await fetchQuizApi<CategoryNameList[]>({
             key: "category_list",
@@ -52,26 +48,42 @@ export default function StartPage() {
     router.push(`/quiz?num=${numQuestions}`); // 必要に応じて他クエリ追加
   };
 
+  /** チェックボックスの選択／解除をトグル */
+  const handleCategoryToggle = (e: ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    setSelectedCategories(prev =>
+      e.target.checked
+        ? [...prev, name]
+        : prev.filter(c => c !== name)
+    );
+  };
+
+  /** 全て選択 */
+  const handleSelectAll = () => {
+    setSelectedCategories(categories.map(c => c.categoryName));
+  };
+
+  /** 全て解除 */
+  const handleDeselectAll = () => {
+    setSelectedCategories([]);
+  };
+
   /* ------------------------------  view  ------------------------------- */
   return (
     <form
       onSubmit={handleStart}
       className="max-w-md sm:max-w-lg md:max-w-xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow"
     >
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">
-        出題設定
-      </h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">出題設定</h1>
 
-      {/* 取得中/エラー表示 */}
       {loading && <p className="mb-4 text-center">ロード中...</p>}
       {error && <p className="mb-4 text-red-500 text-center">{error}</p>}
 
-      {/* シート選択 — 例としてセレクトを追加 */}
       {!loading && !error && (
         <div className="mb-4">
-          <label className="block mb-1">対象シート</label>
+          <label className="block mb-1">対象問題</label>
           <select className="w-full border rounded p-2">
-            {sheets.map((s) => (
+            {sheets.map(s => (
               <option key={s.id} value={String(s.sheetName)}>
                 {s.text}
               </option>
@@ -79,6 +91,40 @@ export default function StartPage() {
           </select>
         </div>
       )}
+
+      {/* 全選択／全解除ボタン */}
+      <div className="flex justify-end mb-2">
+        <button
+          type="button"
+          onClick={handleSelectAll}
+          className="text-sm sm:text-base mr-2 text-[#fa173d]"
+        >
+          全て選択
+        </button>
+        <button
+          type="button"
+          onClick={handleDeselectAll}
+          className="text-sm sm:text-base text-[#fa173d]"
+        >
+          全て解除
+        </button>
+      </div>
+
+      {/* カテゴリチェックボックス */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {categories.map(cat => (
+          <label key={cat.id} className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              value={cat.categoryName}
+              checked={selectedCategories.includes(cat.categoryName)}
+              onChange={handleCategoryToggle}
+              className="w-4 h-4"
+            />
+            <span>{cat.categoryName}</span>
+          </label>
+        ))}
+      </div>
 
       {/* 問題数入力欄 */}
       <div className="mb-4">
@@ -90,7 +136,7 @@ export default function StartPage() {
           type="number"
           min={1}
           value={numQuestions}
-          onChange={(e) => setNumQuestions(Number(e.target.value))}
+          onChange={e => setNumQuestions(Number(e.target.value))}
           className="w-full border border-gray-300 rounded p-2"
         />
       </div>
