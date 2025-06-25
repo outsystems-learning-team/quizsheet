@@ -3,18 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "lint": "eslint \"{src,shared}/**/*.{ts,tsx,js}\"",
-    "lint:fix": "npm run lint -- --fix",
-    "format": "prettier --write \"{src,shared}/**/*.{ts,tsx,js,json,md}\"",
-    "build": "webpack --config webpack.config.cjs",
-    "push": "npm run build && npx clasp push"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@quizsheet/shared": "file:../sharedcd",
     "@google/clasp": "^3.0.4-alpha",
     "@types/google-apps-script": "^1.0.97",
     "@typescript-eslint/eslint-plugin": "^8.35.0",

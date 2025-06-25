@@ -1,0 +1,10 @@
+{
+  "name": "@quizsheet/shared",
+  "version": "1.0.0",
+  "main": "constants.ts",
+  "types": "types.d.ts",
+  "files": [
+    "constants.ts",
+    "types.d.ts"
+  ]
+}

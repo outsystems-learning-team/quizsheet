@@ -1,12 +1,36 @@
 {
   "name": "quizsheet",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "private": true,                                     
+  "description": "Monorepo for QuizSheet (Next.js frontend, GAS backend, shared utilities)",
+  "license": "MIT",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=18",
+    "npm": ">=9"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+"scripts": {
+  "clean": "rimraf node_modules **/node_modules",
+  "postinstall": "npm run prepare --workspaces --if-present",
+
+  "dev": "npm -w frontend run dev",
+  "build": "npm -w backend run build && npm -w frontend run build",
+  "build:backend": "npm -w backend run build",
+  "build:frontend": "npm -w frontend run build",
+
+  "push": "npm -w backend run push",
+
+  "lint": "npm run lint --workspaces --if-present",
+  "lint:fix": "npm run lint:fix --workspaces --if-present",
+  "format": "npm run format --workspaces --if-present"
+},
+
+  "devDependencies": {
+    "rimraf": "^5.0.5",       
+    "prettier": "^3.6.0"       
+  }
 }
