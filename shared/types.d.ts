@@ -38,12 +38,12 @@ declare type QuestionsRequest = {
 
 declare type SheetNameList = {
   id: number;
-  sheetName: String;
-  text: String;
+  sheetName: string;
+  text: string;
 };
 
 declare type CategoryNameList = {
   id: number;
-  sheetName: String;
-  categoryName: String;
+  sheetName: string;
+  categoryName: string;
 };

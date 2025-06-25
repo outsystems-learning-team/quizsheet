@@ -2,42 +2,48 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import type { SheetNameList } from "@shared/types"; // 共有型があれば
-import { SPREAD_SHEET_NAME_LIST } from "@shared/constants"; // 共有型があれば
+import type { SheetNameList, CategoryNameList } from "@shared/types"; // 共有型があれば
+import { fetchQuizApi } from "../../lib/api";
 
 export default function StartPage() {
   const router = useRouter();
 
   /* ------------------------------  state  ------------------------------ */
   const [numQuestions, setNumQuestions] = useState(20);
-  const [sheets, setSheets] = useState<SheetNameList[]>([]); // ← 取得したシート一覧
+  const [sheets, setSheets] = useState<SheetNameList[]>([]);
+  const [categories, setCategories] = useState<CategoryNameList[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
-    (async () => {
+    /** ステップ① シート一覧 → ステップ② カテゴリ一覧 */
+    const load = async () => {
       try {
-        const res = await fetch("/api/quiz", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: "sheet_name_list" }),
+        // ① シート一覧取得
+        const sheetList = await fetchQuizApi<SheetNameList[]>({
+          key: "sheet_name_list",
         });
+        setSheets(sheetList);
 
-        const json = await res.json();
-
-        if (json.status === "ok") {
-          setSheets(json.data); // [{ id, sheetName, text }, …]
-          setError(null);
-        } else {
-          throw new Error(json.message);
+        // ② 先頭シートのカテゴリ取得（シートが存在する場合のみ）
+        if (sheetList.length) {
+          const catList = await fetchQuizApi<CategoryNameList[]>({
+            key: "category_list",
+            targetSheet: sheetList[0].sheetName,
+          });
+          setCategories(catList);
         }
-      } catch (e: any) {
-        setError(e.message ?? "Failed to fetch sheet list");
+
+        setError(null);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    load();
   }, []);
 
   /* ---------------------------  form submit  --------------------------- */
