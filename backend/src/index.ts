@@ -1,46 +1,90 @@
 /**
- * GET リクエストでスプレッドシート「Outsystems過去問」の問題データを返却
+ * Web API エントリーポイント
+ * - `doGet`  : 動作確認用（固定シートの全問返却）
+ * - `doPost` : key に応じて 3 種類のデータ取得を行うルーター
+ *
+ * 共通: Apps Script 用に `globalThis` へ doGet/doPost を公開
  */
-function doGet(
-  e: GoogleAppsScript.Events.DoGet
-): GoogleAppsScript.Content.TextOutput {
+
+import {
+  SPREAD_SHEET_CATEGORY_LIST,
+  SPREAD_SHEET_NAME_LIST,
+  SPREAD_SHEET_SELECT_QUIZ,
+} from "@shared/constants";
+import type { Question, QuestionsResponse, QuestionsRequest } from "@shared/types";
+
+import { getSheetNameList } from "./getSheetNameList";
+import { getCategoryNameList } from "./getCategoryNameList";
+import { getSelectQuizList } from "./getSelectQuizList";
+import { getAllRowsIncludingHeader } from "./utils/sheet";
+import { error, ok } from "./utils/output";
+import { parseBody } from "./utils/parse";
+import { createQuestions } from "./utils/createQuestions";
+/* ------------------------------------------------------------------ */
+/* doGet : 動作確認用シンプルエンドポイント                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * `GET https://…/exec`
+ * 固定シート（associate_reactive_developer）の全問を返す
+ */
+export function doGet(): GoogleAppsScript.Content.TextOutput {
   try {
-    // スクリプト・プロパティまたは直書きでスプレッドシートIDを指定
-    const SPREADSHEET_ID =
-      PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID") ||
-      "1cC8p5VXc6ofxdT1DkplyNoRMgevpj_RN9cNpU4iL0sM";
+    const sheetName = "associate_reactive_developer";
+    const rows = getAllRowsIncludingHeader(sheetName);
+    const questions: Question[] = createQuestions(rows);
 
-    // スプレッドシートを開く
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName("outsystems_sheet");
-    if (!sheet) throw new Error("シート「outsystems_sheet」が見つかりません");
-
-    // データ範囲を取得
-    const rows = sheet.getDataRange().getValues();
-
-    // ヘッダー行を除いてデータを型付きで整形
-    const questions: Question[] = rows.slice(1).map((row) => ({
-      id: Number(row[0]),
-      category: String(row[1]),
-      question: String(row[2]),
-      choices: [String(row[3]), String(row[4]), String(row[5]), String(row[6])],
-      answerIndex: Number(row[7]) - 1,
-      explanation: String(row[8]),
-    }));
-
-    // レスポンス用オブジェクトを生成
     const response: QuestionsResponse = {
       count: questions.length,
       questions,
     };
 
-    // JSON レスポンスを返却
-    return ContentService.createTextOutput(
-      JSON.stringify(response)
-    ).setMimeType(ContentService.MimeType.JSON);
-  } catch (error: any) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ error: error.message })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return ok(response);
+  } catch (err: unknown) {
+    return error(err instanceof Error ? err.message : "Unknown error");
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* doPost : ルーター                                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * POST ボディ例
+ * ```json
+ * { "key":"sheet_name_list" }
+ * { "key":"category_name_list", "targetSheet":"english" }
+ * { "key":"select_quiz", "targetSheet":"english", "category":["A","B"] }
+ * ```
+ */
+export function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.TextOutput {
+  /* ---- JSON パース ------------------------------------------------ */
+  const body = parseBody<QuestionsRequest>(e.postData.contents);
+  if (!body) {
+    return error("Invalid JSON");
+  }
+
+  /* ---- ルーティング ------------------------------------------------ */
+  switch (body.key) {
+    case SPREAD_SHEET_NAME_LIST:
+      return getSheetNameList(body.key);
+
+    case SPREAD_SHEET_CATEGORY_LIST:
+      if (!body.targetSheet) return error("targetSheet is required");
+      return getCategoryNameList(body.key, body.targetSheet);
+
+    case SPREAD_SHEET_SELECT_QUIZ:
+      if (!body.targetSheet) return error("targetSheet is required");
+      if (!body.category?.length) return error("category is required");
+      return getSelectQuizList(body.targetSheet, body.category);
+
+    default:
+      return error("Invalid key");
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* GAS グローバル公開                                                  */
+/* ------------------------------------------------------------------ */
+void [doGet, doPost];
+Object.assign(globalThis as Record<string, unknown>, { doGet, doPost });

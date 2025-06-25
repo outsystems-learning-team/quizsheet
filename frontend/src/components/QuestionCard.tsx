@@ -2,6 +2,7 @@
 "use client";
 
 import type { FC } from "react";
+import {Question} from "../../../shared/types"
 
 export interface QuestionCardProps {
   /** 表示する問題オブジェクト */

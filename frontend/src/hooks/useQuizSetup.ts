@@ -3,6 +3,7 @@
 import { useState, useEffect, useContext } from "react";
 import { QuizContext } from "../context/QuizContext";
 import { fetchQuestions } from "../lib/api";
+import {Question} from "../../../shared/types"
 
 /**
  * クイズ開始前のデータ取得＆カテゴリ選択ロジックを提供するカスタムフック
@@ -44,10 +45,10 @@ export function useQuizSetup() {
           const qs = await fetchQuestions();
           setQuestions(qs);
         }
-        // 問題リストからカテゴリ一覧を生成し、選択状態もデフォルトで全選択
+          // 問題リストからカテゴリ一覧を生成し、選択状態もデフォルトで全選択
         const cats = getUniqueCategories(questions.length > 0 ? questions : []);
-        setAvailableCategories(cats);
-        setSelectedCategories(cats);
+          setAvailableCategories(cats);
+          setSelectedCategories(cats);
       } catch (e: unknown) {
         // Error オブジェクトならメッセージを、そうでなければ汎用エラー文をセット
         setError(e instanceof Error ? e.message : "不明なエラーが発生しました");
@@ -63,8 +64,8 @@ export function useQuizSetup() {
    */
   const toggleCategory = (category: string) =>
     setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category) // 選択解除
+        prev.includes(category)
+          ? prev.filter((c) => c !== category) // 選択解除
         : [...prev, category]                // 選択追加
     );
 
