@@ -1,7 +1,7 @@
 "use client";
 
 import { QuizContext } from "@/context/QuizContext";
-import type { CategoryNameList, Question, SheetNameList } from "@shared/types"; // 共有型があれば
+import type { CategoryNameList, Question, QuestionsResponse, SheetNameList } from "@shared/types"; // 共有型があれば
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { fetchQuizApi } from "../../lib/api";
@@ -48,33 +48,26 @@ export default function StartPage() {
   /* ---------------------------  form submit  --------------------------- */
   const handleStart = async () => {
     try {
-      const res = await fetchQuizApi<any>({
+      const { questions }: QuestionsResponse = await fetchQuizApi<QuestionsResponse>({
         key: "select_quiz",
         targetSheet: activeSheet,
         category: selectedCategories,
       });
 
-      // 配列でなければ data または questions プロパティを探す
-      const raw: Question[] = Array.isArray(res)
-        ? res
-        : Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.questions)
-            ? res.questions
-            : [];
-
-      if (raw.length === 0) {
+      if (questions.length === 0) {
         setError("選択条件に合う問題がありません");
         return;
       }
 
-      // シャッフル
-      for (let i = raw.length - 1; i > 0; i--) {
+      /* --- シャッフル (F-Y) --- */
+      const shuffled = [...questions];
+      for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [raw[i], raw[j]] = [raw[j], raw[i]];
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
 
-      const finalQs = raw.slice(0, numQuestions);
+      /* --- 切り詰め --- */
+      const finalQs: Question[] = shuffled.slice(0, numQuestions);
 
       setQuestions(finalQs);
       router.push(`/quiz?count=${finalQs.length}`);
