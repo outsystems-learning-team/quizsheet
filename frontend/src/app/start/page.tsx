@@ -1,8 +1,9 @@
 "use client";
 
-import type { CategoryNameList, SheetNameList } from "@shared/types"; // 共有型があれば
+import { QuizContext } from "@/context/QuizContext";
+import type { CategoryNameList, Question, SheetNameList } from "@shared/types"; // 共有型があれば
 import { useRouter } from "next/navigation";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { fetchQuizApi } from "../../lib/api";
 
 export default function StartPage() {
@@ -16,6 +17,7 @@ export default function StartPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [activeSheet, setActiveSheet] = useState<string>("");
+  const { setQuestions } = useContext(QuizContext);
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
@@ -44,9 +46,41 @@ export default function StartPage() {
   }, []);
 
   /* ---------------------------  form submit  --------------------------- */
-  const handleStart = (e: FormEvent) => {
-    e.preventDefault();
-    router.push(`/quiz?num=${numQuestions}`); // 必要に応じて他クエリ追加
+  const handleStart = async () => {
+    try {
+      const res = await fetchQuizApi<any>({
+        key: "select_quiz",
+        targetSheet: activeSheet,
+        category: selectedCategories,
+      });
+
+      // 配列でなければ data または questions プロパティを探す
+      const raw: Question[] = Array.isArray(res)
+        ? res
+        : Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.questions)
+            ? res.questions
+            : [];
+
+      if (raw.length === 0) {
+        setError("選択条件に合う問題がありません");
+        return;
+      }
+
+      // シャッフル
+      for (let i = raw.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [raw[i], raw[j]] = [raw[j], raw[i]];
+      }
+
+      const finalQs = raw.slice(0, numQuestions);
+
+      setQuestions(finalQs);
+      router.push(`/quiz?count=${finalQs.length}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "取得失敗");
+    }
   };
 
   const handleSheetChange = async (e: ChangeEvent<HTMLSelectElement>) => {
@@ -157,9 +191,10 @@ export default function StartPage() {
       </div>
 
       <button
-        type="submit"
+        type="button" // ★これを追加
         className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
         disabled={loading || !!error}
+        onClick={handleStart}
       >
         スタート
       </button>
