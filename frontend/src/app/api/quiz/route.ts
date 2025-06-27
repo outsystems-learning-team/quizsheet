@@ -1,45 +1,76 @@
 // frontend/app/api/quiz/route.ts
+import { NextResponse, NextRequest } from 'next/server';
 
-import { NextResponse } from "next/server";
+/* ------------------------------------------------------------------ */
+/* util: 共通レスポンス & GAS 転送                                     */
+/* ------------------------------------------------------------------ */
 
-/**
- * GET ハンドラ：Google Apps Script (GAS) 経由で問題データを取得し、JSON を返却する。
- *
- * - 環境変数 `GAS_SCRIPT_ID` が未定義の場合は 500 エラーを返却
- * - クライアントからのクエリ文字列はそのまま GAS API に転送
- * - GAS API のレスポンスを JSON 形式でクライアントに返却
- *
- * @returns {Promise<NextResponse>} 問題データの JSON レスポンス、もしくはエラーレスポンス
- */
-export async function GET(): Promise<NextResponse> {
-  // GAS スクリプトの ID を環境変数から取得
-  const GAS_SCRIPT_ID = process.env.GAS_SCRIPT_ID;
-  if (!GAS_SCRIPT_ID) {
-    // 環境変数未設定なら 500 エラーで応答
-    return NextResponse.json(
-      { error: "GAS_SCRIPT_ID が定義されていません" },
-      { status: 500 }
-    );
+/** GAS スクリプト ID を取得（未設定なら例外） */
+const gasId = (): string => {
+  const id = process.env.GAS_SCRIPT_ID;
+  if (!id) throw new Error('GAS_SCRIPT_ID が定義されていません');
+  return id;
+};
+
+/** 失敗時にステータス付きで throw するカスタム Error */
+class ResponseError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
   }
+}
 
-  // クエリ文字列をそのまま GAS に転送するためのエンドポイント URL を構築
-  const url = `https://script.google.com/macros/s/${GAS_SCRIPT_ID}/exec`;
+/** GAS API に fetch → JSON を返す（エラー時は ResponseError） */
+const callGas = async (init?: RequestInit, query = '') => {
+  const url = `https://script.google.com/macros/s/${gasId()}/exec${query}`;
+  const res = await fetch(url, init);
 
-  // GAS API に GET リクエストを送信
-  const res = await fetch(url);
-
-  // GAS API のステータスをチェック
   if (!res.ok) {
-    // エラー発生時はステータスコードとメッセージをクライアントに返却
-    return NextResponse.json(
-      { error: `GAS API エラー: ${res.status}` },
-      { status: res.status }
-    );
+    throw new ResponseError(res.status, `GAS API Error: ${res.status}`);
   }
+  return res.json();
+};
 
-  // レスポンスボディを JSON としてパース
-  const data = await res.json();
+/** 例外を NextResponse.json に変換 */
+const respond = <T>(data: T | Error) =>
+  data instanceof Error
+    ? NextResponse.json(
+        { error: data.message },
+        { status: data instanceof ResponseError ? data.status : 500 },
+      )
+    : NextResponse.json(data);
 
-  // クライアントに JSON レスポンスを返却
-  return NextResponse.json(data);
+/* ------------------------------------------------------------------ */
+/* GET                                                                */
+/* ------------------------------------------------------------------ */
+
+export async function GET(req: NextRequest) {
+  try {
+    const data = await callGas(undefined, req.nextUrl.search); // ?key=...
+    return respond(data);
+  } catch (err) {
+    return respond(err as Error);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* POST                                                               */
+/* ------------------------------------------------------------------ */
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => {
+      throw new ResponseError(400, 'Invalid JSON in request body');
+    });
+
+    const init: RequestInit = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    };
+
+    const data = await callGas(init); // POST はクエリ不要
+    return respond(data);
+  } catch (err) {
+    return respond(err as Error);
+  }
 }
