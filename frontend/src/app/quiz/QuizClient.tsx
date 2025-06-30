@@ -112,11 +112,29 @@ export default function QuizClient(): JSX.Element {
   return (
     <>
       {/* 回答状況 */}
-      <div className="mb-4 text-center text-sm text-gray-600">
-        回答数: {answeredCount} / {questions.length}・
-        正答数: {correctCount}・
-        正答率: {answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0}%・
-        連続正解: {streak}
+      <div className="mb-4 flex flex-wrap justify-center gap-3 max-w-2xl mx-auto px-4">
+        {/* 回答数 */}
+        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
+          <p className="text-xs text-gray-500 whitespace-nowrap">回答数</p>
+          <p className="font-bold text-sm whitespace-nowrap">{answeredCount} / {questions.length}</p>
+        </div>
+        {/* 正答数 */}
+        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
+          <p className="text-xs text-gray-500 whitespace-nowrap">正答数</p>
+          <p className="font-bold text-sm whitespace-nowrap">{correctCount}</p>
+          </div>
+        {/* 正答率 */}
+        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
+          <p className="text-xs text-gray-500 whitespace-nowrap">正答率</p>
+          <p className="font-bold text-sm whitespace-nowrap">
+            {answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0}%
+          </p>
+        </div>
+        {/* 連続正解 */}
+        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
+          <p className="text-xs text-gray-500 whitespace-nowrap">連続正解</p>
+          <p className="font-bold text-sm whitespace-nowrap">{streak}</p>
+        </div>
       </div>
 
       {/* 問題文＋選択肢表示 */}
