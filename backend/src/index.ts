@@ -11,15 +11,15 @@ import {
   SPREAD_SHEET_NAME_LIST,
   SPREAD_SHEET_SELECT_QUIZ,
 } from "@shared/constants";
-import type { Question, QuestionsResponse, QuestionsRequest } from "@shared/types";
+import type { Question, QuestionsRequest, QuestionsResponse } from "@shared/types";
 
-import { getSheetNameList } from "./getSheetNameList";
 import { getCategoryNameList } from "./getCategoryNameList";
+import { getInitData } from "./getInitData";
 import { getSelectQuizList } from "./getSelectQuizList";
-import { getAllRowsIncludingHeader } from "./utils/sheet";
+import { createQuestions } from "./utils/createQuestions";
 import { error, ok } from "./utils/output";
 import { parseBody } from "./utils/parse";
-import { createQuestions } from "./utils/createQuestions";
+import { getAllRowsIncludingHeader } from "./utils/sheet";
 /* ------------------------------------------------------------------ */
 /* doGet : 動作確認用シンプルエンドポイント                            */
 /* ------------------------------------------------------------------ */
@@ -66,8 +66,8 @@ export function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Cont
 
   /* ---- ルーティング ------------------------------------------------ */
   switch (body.key) {
-    case SPREAD_SHEET_NAME_LIST:
-      return getSheetNameList(body.key);
+    case SPREAD_SHEET_NAME_LIST: // ★追加
+      return getInitData();
 
     case SPREAD_SHEET_CATEGORY_LIST:
       if (!body.targetSheet) return error("targetSheet is required");

@@ -1,6 +1,6 @@
 import {
-  SPREAD_SHEET_NAME_LIST,
   SPREAD_SHEET_CATEGORY_LIST,
+  SPREAD_SHEET_NAME_LIST,
   SPREAD_SHEET_SELECT_QUIZ,
 } from "./constants";
 
@@ -35,6 +35,11 @@ declare type QuestionsRequest = {
   targetSheet?: string;
   category?: string[];
 };
+
+declare type InitData= {
+  sheetNameList:SheetNameList[];
+  categoryNameList:CategoryNameList[];
+}
 
 declare type SheetNameList = {
   id: number;
