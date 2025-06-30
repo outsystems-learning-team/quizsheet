@@ -52,15 +52,17 @@ export const ResultCard: FC<ResultCardProps> = ({
         <h3 className="text-lg font-semibold mb-2">カテゴリ別成績</h3>
         <ul className="space-y-2">
           {Object.entries(categoryStats).map(([category, stat]) => (
-            <li
-              key={category}
-              className="flex justify-between bg-gray-50 px-4 py-2 rounded-md shadow-sm"
+           <li
+            key={category}
+            className="flex items-center bg-gray-50 px-4 py-2 rounded-md shadow-sm"
             >
-              <span className="font-medium">{category}</span>
-              <span>
+              <span className="flex-1 min-w-0 truncate whitespace-nowrap overflow-hidden mr-2 font-medium">
+              {category}
+              </span>
+              <span className="shrink-0 truncate whitespace-nowrap text-right">
                 {stat.correct} / {stat.total}
               </span>
-            </li>
+          </li>
           ))}
         </ul>
       </div>

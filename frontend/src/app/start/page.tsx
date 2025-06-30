@@ -152,17 +152,23 @@ export default function StartPage() {
 
           {/* カテゴリチェックボックス */}
           <div className="grid gap-2 mb-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
             {categories.map((cat) => (
-              <label key={cat.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value={cat.categoryName}
-                  checked={selectedCategories.includes(cat.categoryName)}
-                  onChange={handleCategoryToggle}
-                  className="w-4 h-4"
-                />
-                <span className="truncate">{cat.categoryName}</span>
-              </label>
+            <label key={cat.id} className="flex items-center space-x-2">
+            <input
+            type="checkbox"
+            value={cat.categoryName}
+            checked={selectedCategories.includes(cat.categoryName)}
+            onChange={handleCategoryToggle}
+            className="w-4 h-4 shrink-0"
+            />
+            <span
+            className="truncate whitespace-nowrap overflow-hidden w-full"
+            title={cat.categoryName}
+            >
+            {cat.categoryName}
+            </span>
+            </label>
             ))}
           </div>
         </>
