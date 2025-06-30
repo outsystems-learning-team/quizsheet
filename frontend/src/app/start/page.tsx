@@ -1,7 +1,7 @@
 "use client";
 
 import { QuizContext } from "@/context/QuizContext";
-import type { CategoryNameList, Question, QuestionsResponse, SheetNameList } from "@shared/types"; // 共有型があれば
+import type { CategoryNameList, InitData, Question, QuestionsResponse, SheetNameList } from "@shared/types"; // 共有型があれば
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { fetchQuizApi } from "../../lib/api";
@@ -21,28 +21,27 @@ export default function StartPage() {
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
-    const load = async () => {
+    (async () => {
       try {
-        const sheetList = await fetchQuizApi<SheetNameList[]>({ key: "sheet_name_list" });
-        setSheets(sheetList);
+        const init = await fetchQuizApi<InitData>({
+          key: "sheet_name_list", // SPREAD_SHEET_INIT_DATA と対応
+        });
 
-        if (sheetList.length) {
-          const first = sheetList[0].sheetName;
-          setActiveSheet(first); // ★追加
-          const catList = await fetchQuizApi<CategoryNameList[]>({
-            key: "category_list",
-            targetSheet: first,
-          });
-          setCategories(catList);
+        setSheets(init.sheetNameList);
+        setCategories(init.categoryNameList);
+
+        // activeSheet はフロント側でも明示しておく
+        if (init.sheetNameList.length) {
+          setActiveSheet(init.sheetNameList[0].sheetName);
         }
+
         setError(null);
-      } catch (e: unknown) {
+      } catch (e) {
         setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
         setLoading(false);
       }
-    };
-    load();
+    })();
   }, []);
 
   /* ---------------------------  form submit  --------------------------- */
@@ -152,23 +151,19 @@ export default function StartPage() {
 
           {/* カテゴリチェックボックス */}
           <div className="grid gap-2 mb-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-
             {categories.map((cat) => (
-            <label key={cat.id} className="flex items-center space-x-2">
-            <input
-            type="checkbox"
-            value={cat.categoryName}
-            checked={selectedCategories.includes(cat.categoryName)}
-            onChange={handleCategoryToggle}
-            className="w-4 h-4 shrink-0"
-            />
-            <span
-            className="truncate whitespace-nowrap overflow-hidden w-full"
-            title={cat.categoryName}
-            >
-            {cat.categoryName}
-            </span>
-            </label>
+              <label key={cat.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  value={cat.categoryName}
+                  checked={selectedCategories.includes(cat.categoryName)}
+                  onChange={handleCategoryToggle}
+                  className="w-4 h-4 shrink-0"
+                />
+                <span className="truncate whitespace-nowrap overflow-hidden w-full" title={cat.categoryName}>
+                  {cat.categoryName}
+                </span>
+              </label>
             ))}
           </div>
         </>
