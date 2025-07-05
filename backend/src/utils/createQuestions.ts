@@ -1,17 +1,17 @@
 import { Question } from "@shared/types";
 
 /**
- * 2 次元配列から Question オブジェクトの配列を生成するユーティリティ
+ * スプレッドシートの行データから `Question` オブジェクトの配列を生成します。
  *
- * @param rows          スプレッドシートから取得した行データ（ヘッダーを除く）
- * @param categoryFilter ここで指定したカテゴリ名のみ抽出（省略可）
- * @returns             Question 型の配列
+ * @param rows スプレッドシートから取得した行データの2次元配列。
+ * @param categoryFilter オプション。カテゴリ名で絞り込む場合に指定します。
+ * @returns 生成された `Question` オブジェクトの配列。
  */
 export const createQuestions = (
   rows: unknown[][],
   categoryFilter?: readonly string[]
 ): Question[] => {
-  //カテゴリで絞り込む（指定がなければ全行）
+  // カテゴリで絞り込む（指定がなければ全行）
   const bodyRows = categoryFilter?.length
     ? rows.filter((row) => categoryFilter.includes(String(row[1])))
     : rows;

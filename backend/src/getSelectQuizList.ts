@@ -4,18 +4,18 @@ import { error, ok } from "./utils/output";
 import { getAllRowsIncludingHeader } from "./utils/sheet";
 
 /**
- * 指定シートからカテゴリー条件で絞り込んだクイズ一覧を返す。
+ * 指定されたシートから、カテゴリ条件で絞り込んだクイズのリストを返します。
  *
- * @param targetSheet
- * @param categoryList
- * @returns
+ * @param targetSheet クイズを取得するシート名。
+ * @param categoryList 絞り込み条件となるカテゴリ名の配列。
+ * @returns 絞り込まれたクイズのリストを含むJSONレスポンス。
  */
 export const getSelectQuizList = (
   targetSheet: string,
   categoryList: string[]
 ): GoogleAppsScript.Content.TextOutput => {
   try {
-    // ── 行データをカテゴリでフィルタ ＋ Question 型へ変換 ──────────
+    // --- 行データをカテゴリでフィルタ ＋ Question 型へ変換 ---
     const rows = getAllRowsIncludingHeader(targetSheet);
 
     const questions: Question[] = createQuestions(rows, categoryList);
@@ -25,7 +25,7 @@ export const getSelectQuizList = (
       questions,
     };
 
-    // ── 正常レスポンス ────────────────────────────────
+    // --- 正常レスポンス ---
     return ok(response);
   } catch (err: unknown) {
     // 例外を安全にメッセージへ変換
