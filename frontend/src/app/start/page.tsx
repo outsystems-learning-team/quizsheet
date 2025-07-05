@@ -12,6 +12,7 @@ import type {
 } from "@shared/types";
 import { QuizContext } from "@/context/QuizContext";
 import { fetchQuizApi } from "../../lib/api";
+import { LoadingOverlay } from "../../components/LoadingOverlay";
 
 /**
  * スタートページコンポーネント
@@ -25,15 +26,15 @@ export default function StartPage() {
   const [numQuestions, setNumQuestions] = useState(20);
   const [sheets, setSheets] = useState<SheetNameList[]>([]);
   const [categories, setCategories] = useState<CategoryNameList[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [activeSheet, setActiveSheet] = useState<string>("");
-  const { setQuestions } = useContext(QuizContext);
+  const { setQuestions, isLoading, setIsLoading } = useContext(QuizContext);
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       try {
         const init = await fetchQuizApi<InitData>({
           key: "sheet_name_list",
@@ -50,13 +51,14 @@ export default function StartPage() {
       } catch (e) {
         setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     })();
   }, []);
 
   /* ---------------------------  form submit  --------------------------- */
   const handleStart = async () => {
+    setIsLoading(true);
     try {
       const { questions }: QuestionsResponse =
         await fetchQuizApi<QuestionsResponse>({
@@ -79,6 +81,8 @@ export default function StartPage() {
       router.push(`/quiz?count=${finalQs.length}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "取得失敗");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -87,6 +91,7 @@ export default function StartPage() {
     setActiveSheet(sheetName);
     setSelectedCategories([]);
 
+    setIsLoading(true);
     try {
       const catList = await fetchQuizApi<CategoryNameList[]>({
         key: "category_list",
@@ -97,6 +102,8 @@ export default function StartPage() {
       setError(
         `カテゴリ取得に失敗しました: ${e instanceof Error ? e.message : "不明なエラー"}`,
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,10 +135,9 @@ export default function StartPage() {
         出題設定
       </h1>
 
-      {loading && <p className="mb-4 text-center">ロード中...</p>}
       {error && <p className="mb-4 text-red-500 text-center">{error}</p>}
 
-      {!loading && !error && (
+      {!isLoading && !error && (
         <div className="mb-4">
           <label className="block mb-1">対象問題</label>
           <select
@@ -148,7 +154,7 @@ export default function StartPage() {
         </div>
       )}
 
-      {!loading && !error && (
+      {!isLoading && !error && (
         <>
           <label className="block mb-1">カテゴリー選択</label>
           <div className="flex justify-end mb-2">
@@ -208,11 +214,12 @@ export default function StartPage() {
       <button
         type="button"
         className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
-        disabled={loading || !!error}
+        disabled={isLoading || !!error}
         onClick={handleStart}
       >
         スタート
       </button>
+      {isLoading && <LoadingOverlay />}
     </form>
   );
 }

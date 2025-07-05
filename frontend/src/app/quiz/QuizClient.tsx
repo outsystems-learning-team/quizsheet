@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQuizClient } from "../../hooks/useQuizClient";
 import { QuestionCard } from "../../components/QuestionCard";
 import { QuestionFooter } from "../../components/QuestionFooter";
+import { LoadingOverlay } from "../../components/LoadingOverlay";
 
 /**
  * クイズページ全体のコンポーネント
@@ -19,7 +20,7 @@ import { QuestionFooter } from "../../components/QuestionFooter";
 export default function QuizClient(): JSX.Element {
   const router = useRouter();
 
-  const { questions } = useQuizClient();
+  const { questions, isLoading } = useQuizClient();
 
   const searchParams = useSearchParams();
   const totalToAnswer = Math.min(
@@ -143,6 +144,8 @@ export default function QuizClient(): JSX.Element {
           onFinish={handleFinish}
         />
       )}
+
+      {isLoading && <LoadingOverlay />}
     </>
   );
 }
