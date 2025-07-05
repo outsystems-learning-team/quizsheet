@@ -62,7 +62,7 @@ const respond = <T>(data: T | Error) =>
  */
 export async function GET(req: NextRequest) {
   try {
-    const data = await callGas(undefined, req.nextUrl.search); // ?key=...
+    const data = await callGas(undefined, req.nextUrl.search);
     return respond(data);
   } catch (err) {
     return respond(err as Error);
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     };
 
-    const data = await callGas(init); // POST はクエリ不要
+    const data = await callGas(init);
     return respond(data);
   } catch (err) {
     return respond(err as Error);

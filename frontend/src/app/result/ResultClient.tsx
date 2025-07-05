@@ -13,7 +13,6 @@ export default function ResultPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // クエリパラメータから情報を取得
   const answered = Number(searchParams.get("answered") ?? 0);
   const correct = Number(searchParams.get("correct") ?? 0);
   const streak = Number(searchParams.get("streak") ?? 0);

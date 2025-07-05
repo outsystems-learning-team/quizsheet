@@ -23,8 +23,8 @@ export type QuizContextValue = {
  * - setQuestions はダミー関数
  */
 export const QuizContext = createContext<QuizContextValue>({
-  questions: [], // 問題リストの初期値
-  setQuestions: () => {}, // デフォルトの空関数
+  questions: [],
+  setQuestions: () => {},
 });
 
 /**
@@ -41,11 +41,9 @@ export function QuizProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
-  // 問題リストを保持するローカルステート
   const [questions, setQuestions] = useState<Question[]>([]);
 
   return (
-    // Context.Provider を通じて questions と setQuestions を下位コンポーネントに公開
     <QuizContext.Provider value={{ questions, setQuestions }}>
       {children}
     </QuizContext.Provider>

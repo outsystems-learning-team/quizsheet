@@ -9,7 +9,7 @@ import type {
   Question,
   QuestionsResponse,
   SheetNameList,
-} from "@shared/types"; // 共有型があれば
+} from "@shared/types";
 import { QuizContext } from "@/context/QuizContext";
 import { fetchQuizApi } from "../../lib/api";
 
@@ -36,13 +36,12 @@ export default function StartPage() {
     (async () => {
       try {
         const init = await fetchQuizApi<InitData>({
-          key: "sheet_name_list", // SPREAD_SHEET_INIT_DATA と対応
+          key: "sheet_name_list",
         });
 
         setSheets(init.sheetNameList);
         setCategories(init.categoryNameList);
 
-        // activeSheet はフロント側でも明示しておく
         if (init.sheetNameList.length) {
           setActiveSheet(init.sheetNameList[0].sheetName);
         }
@@ -85,8 +84,8 @@ export default function StartPage() {
 
   const handleSheetChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const sheetName = e.target.value;
-    setActiveSheet(sheetName); // 選択状態更新
-    setSelectedCategories([]); // チェックをリセット
+    setActiveSheet(sheetName);
+    setSelectedCategories([]);
 
     try {
       const catList = await fetchQuizApi<CategoryNameList[]>({
@@ -151,7 +150,6 @@ export default function StartPage() {
 
       {!loading && !error && (
         <>
-          {/* 全選択／全解除ボタン */}
           <label className="block mb-1">カテゴリー選択</label>
           <div className="flex justify-end mb-2">
             <button
@@ -170,7 +168,6 @@ export default function StartPage() {
             </button>
           </div>
 
-          {/* カテゴリチェックボックス */}
           <div className="grid gap-2 mb-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {categories.map((cat) => (
               <label key={cat.id} className="flex items-center space-x-2">

@@ -4,12 +4,6 @@ import { QuizProvider } from "../context/QuizContext";
 
 import "./globals.css";
 
-/**
- * ページ全体のメタ情報を設定するオブジェクト
- *
- * title: ブラウザのタイトルバーやタブに表示される文字列
- * description: ページの説明（SEO や SNS シェア時に使用）
- */
 export const metadata = {
   title: "QuizSheet",
   description: "Web 四択問題アプリ",
@@ -31,13 +25,9 @@ export default function RootLayout({
   children: ReactNode;
 }): JSX.Element {
   return (
-    // ドキュメントのルート要素
     <html lang="ja">
-      {/* ページ全体の背景色と最小高さを設定 */}
       <body className="min-h-screen bg-gray-50">
-        {/* コンテンツを中央寄せにし、余白を付与するコンテナ */}
         <div className="container mx-auto p-4">
-          {/* QuizProvider でコンテキストを提供し、子要素をラップ */}
           <QuizProvider>{children}</QuizProvider>
         </div>
       </body>
