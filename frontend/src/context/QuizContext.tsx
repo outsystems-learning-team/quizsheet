@@ -14,6 +14,8 @@ import { Question } from "../../../shared/types";
 export type QuizContextValue = {
   questions: Question[];
   setQuestions: (qs: Question[]) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 };
 
 /**
@@ -25,6 +27,8 @@ export type QuizContextValue = {
 export const QuizContext = createContext<QuizContextValue>({
   questions: [],
   setQuestions: () => {},
+  isLoading: false,
+  setIsLoading: () => {},
 });
 
 /**
@@ -42,9 +46,10 @@ export function QuizProvider({
   children: ReactNode;
 }): JSX.Element {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   return (
-    <QuizContext.Provider value={{ questions, setQuestions }}>
+    <QuizContext.Provider value={{ questions, setQuestions, isLoading, setIsLoading }}>
       {children}
     </QuizContext.Provider>
   );

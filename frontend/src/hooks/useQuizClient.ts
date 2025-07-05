@@ -12,9 +12,9 @@ import { QuizContext } from "../context/QuizContext";
  * @returns {Function} .reset - クイズの状態をリセットする関数
  */
 export function useQuizClient() {
-  const { questions } = useContext(QuizContext);
+  const { questions, isLoading, setIsLoading } = useContext(QuizContext);
   const reset = () => {};
-  return { questions, reset };
+  return { questions, isLoading, setIsLoading, reset };
 }
 
 export { QuizContext };
