@@ -1,9 +1,6 @@
 /**
- * Web API エントリーポイント
- * - `doGet`  : 動作確認用（固定シートの全問返却）
- * - `doPost` : key に応じて 3 種類のデータ取得を行うルーター
- *
- * 共通: Apps Script 用に `globalThis` へ doGet/doPost を公開
+ * @file Web APIのエントリーポイントです。
+ * `doGet`と`doPost`をGoogle Apps Scriptのグローバル関数として公開します。
  */
 
 import {
@@ -20,9 +17,7 @@ import { createQuestions } from "./utils/createQuestions";
 import { error, ok } from "./utils/output";
 import { parseBody } from "./utils/parse";
 import { getAllRowsIncludingHeader } from "./utils/sheet";
-/* ------------------------------------------------------------------ */
-/* doGet : 動作確認用シンプルエンドポイント                            */
-/* ------------------------------------------------------------------ */
+// --- doGet : 動作確認用シンプルエンドポイント ---
 
 /**
  * `GET https://…/exec`
@@ -45,9 +40,7 @@ export function doGet(): GoogleAppsScript.Content.TextOutput {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* doPost : ルーター                                                   */
-/* ------------------------------------------------------------------ */
+// --- doPost : ルーター ---
 
 /**
  * POST ボディ例
@@ -58,13 +51,13 @@ export function doGet(): GoogleAppsScript.Content.TextOutput {
  * ```
  */
 export function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.TextOutput {
-  /* ---- JSON パース ------------------------------------------------ */
+  // --- JSON パース ---
   const body = parseBody<QuestionsRequest>(e.postData.contents);
   if (!body) {
     return error("Invalid JSON");
   }
 
-  /* ---- ルーティング ------------------------------------------------ */
+  // --- ルーティング ---
   switch (body.key) {
     case SPREAD_SHEET_NAME_LIST: // ★追加
       return getInitData();
@@ -83,8 +76,6 @@ export function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Cont
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* GAS グローバル公開                                                  */
-/* ------------------------------------------------------------------ */
+// --- GAS グローバル公開 ---
 void [doGet, doPost];
 Object.assign(globalThis as Record<string, unknown>, { doGet, doPost });

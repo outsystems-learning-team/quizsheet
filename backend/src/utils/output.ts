@@ -1,9 +1,9 @@
 /**
- * 共通レスポンスユーティリティ
- * ─────────────────────────────────────────────────────────
+ * @file 共通レスポンスユーティリティを提供します。
+ *
  * - `json()` : ContentService.TextOutput を生成する一段ラッパー
  * - `ok()`   : 成功レスポンス { status:"ok", data }
- * - `error()`:_失敗レスポンス { status:"error", message }
+ * - `error()`: 失敗レスポンス { status:"error", message }
  */
 
 /**

@@ -1,6 +1,6 @@
-/* utils/sheet.ts
- * スプレッドシート／シート取得ヘルパー
- * --------------------------------------------------------------- */
+/**
+ * @file スプレッドシートやシートの取得に関するヘルパー関数を提供します。
+ */
 
 let cachedSpreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null = null;
 
@@ -46,6 +46,7 @@ export const getSheetOrThrow = (
 
 /**
  * 指定シートの全セル（ヘッダー行含む）を取得するユーティリティ
+ * CacheServiceを利用して、一度取得したデータは10分間キャッシュします。
  * @param name 取得対象のシート名
  * @param ss   対象の Spreadsheet（省略時は getSpreadsheet()）
  * @returns 2次元配列 [row][col]
@@ -54,10 +55,24 @@ export const getAllRowsIncludingHeader = (
   name: string,
   ss: GoogleAppsScript.Spreadsheet.Spreadsheet = getSpreadsheet()
 ): unknown[][] => {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = `sheet_data_${name}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
   const sheet = getSheetOrThrow(name, ss);
   const lastRow = sheet.getLastRow();
   const lastCol = sheet.getLastColumn();
   if (lastRow <= 1 || lastCol < 1) return []; // データ行が無い
-  // 2 行目から取得
-  return sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+  // 2行目から取得
+  const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  
+  // データを10分間キャッシュする
+  cache.put(cacheKey, JSON.stringify(values), 600); 
+
+  return values;
 };
