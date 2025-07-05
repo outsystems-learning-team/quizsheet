@@ -1,6 +1,6 @@
-/* utils/sheet.ts
- * スプレッドシート／シート取得ヘルパー
- * --------------------------------------------------------------- */
+/**
+ * @file スプレッドシートやシートの取得に関するヘルパー関数を提供します。
+ */
 
 let cachedSpreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null = null;
 
@@ -58,6 +58,6 @@ export const getAllRowsIncludingHeader = (
   const lastRow = sheet.getLastRow();
   const lastCol = sheet.getLastColumn();
   if (lastRow <= 1 || lastCol < 1) return []; // データ行が無い
-  // 2 行目から取得
+  // 2行目から取得
   return sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
 };
