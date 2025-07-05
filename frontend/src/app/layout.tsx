@@ -1,6 +1,8 @@
-import { QuizProvider } from "../context/QuizContext";
-import "./globals.css";
 import type { JSX, ReactNode } from "react";
+
+import { QuizProvider } from "../context/QuizContext";
+
+import "./globals.css";
 
 /**
  * ページ全体のメタ情報を設定するオブジェクト
@@ -23,7 +25,11 @@ export const metadata = {
  * @param {ReactNode} props.children - 各ページのコンテンツ
  * @returns {JSX.Element} ルートレイアウトの JSX
  */
-export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}): JSX.Element {
   return (
     // ドキュメントのルート要素
     <html lang="ja">
@@ -32,9 +38,7 @@ export default function RootLayout({ children }: { children: ReactNode }): JSX.E
         {/* コンテンツを中央寄せにし、余白を付与するコンテナ */}
         <div className="container mx-auto p-4">
           {/* QuizProvider でコンテキストを提供し、子要素をラップ */}
-          <QuizProvider>
-            {children}
-          </QuizProvider>
+          <QuizProvider>{children}</QuizProvider>
         </div>
       </body>
     </html>

@@ -1,4 +1,3 @@
-// src/components/QuestionFooter.tsx
 "use client";
 
 import type { FC } from "react";

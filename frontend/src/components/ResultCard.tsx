@@ -1,4 +1,3 @@
-// src/components/ResultCard.tsx
 "use client";
 
 import type { FC } from "react";
@@ -11,6 +10,16 @@ export interface ResultCardProps {
   onRestart?: () => void;
 }
 
+/**
+ * クイズ結果を表示するカードコンポーネント
+ *
+ * @param {number} props.answered - 回答した問題数
+ * @param {number} props.correct - 正解した問題数
+ * @param {number} props.streak - 連続正解数
+ * @param {Record<string, { total: number; correct: number }>} props.categoryStats - カテゴリごとの統計情報
+ * @param {() => void} [props.onRestart] - 再スタートボタンがクリックされたときのコールバック
+ * @returns {JSX.Element} 結果カードの UI 要素
+ */
 export const ResultCard: FC<ResultCardProps> = ({
   answered,
   correct,
@@ -21,7 +30,7 @@ export const ResultCard: FC<ResultCardProps> = ({
   const rate = answered > 0 ? Math.round((correct / answered) * 100) : 0;
 
   return (
-    //<div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto p-6 bg-white shadow-lg rounded-xl">
+    // <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto p-6 bg-white shadow-lg rounded-xl">
     <div className="mb-6">
       <h2 className="text-2xl font-bold mb-6 text-center text-[#fa173d]">
         回答結果
@@ -52,17 +61,17 @@ export const ResultCard: FC<ResultCardProps> = ({
         <h3 className="text-lg font-semibold mb-2">カテゴリ別成績</h3>
         <ul className="space-y-2">
           {Object.entries(categoryStats).map(([category, stat]) => (
-           <li
-            key={category}
-            className="flex items-center bg-gray-50 px-4 py-2 rounded-md shadow-sm"
+            <li
+              key={category}
+              className="flex items-center bg-gray-50 px-4 py-2 rounded-md shadow-sm"
             >
               <span className="flex-1 min-w-0 truncate whitespace-nowrap overflow-hidden mr-2 font-medium">
-              {category}
+                {category}
               </span>
               <span className="shrink-0 truncate whitespace-nowrap text-right">
                 {stat.correct} / {stat.total}
               </span>
-          </li>
+            </li>
           ))}
         </ul>
       </div>

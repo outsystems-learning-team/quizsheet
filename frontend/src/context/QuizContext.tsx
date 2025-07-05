@@ -1,8 +1,9 @@
-// frontend/src/context/QuizContext.tsx
 "use client";
 
-import React, { createContext, useState, ReactNode, JSX } from "react";
-import {Question} from "../../../shared/types"
+import type { ReactNode, JSX } from "react";
+import { createContext, useState } from "react";
+
+import { Question } from "../../../shared/types";
 
 /**
  * QuizContext で管理する状態の型定義
@@ -22,8 +23,8 @@ export type QuizContextValue = {
  * - setQuestions はダミー関数
  */
 export const QuizContext = createContext<QuizContextValue>({
-  questions: [],           // 問題リストの初期値
-  setQuestions: () => {},  // デフォルトの空関数
+  questions: [], // 問題リストの初期値
+  setQuestions: () => {}, // デフォルトの空関数
 });
 
 /**
@@ -35,7 +36,11 @@ export const QuizContext = createContext<QuizContextValue>({
  * @param {ReactNode} props.children - QuizContext を利用する子要素
  * @returns {JSX.Element} QuizContext.Provider でラップした子要素
  */
-export function QuizProvider({ children }: { children: ReactNode }): JSX.Element {
+export function QuizProvider({
+  children,
+}: {
+  children: ReactNode;
+}): JSX.Element {
   // 問題リストを保持するローカルステート
   const [questions, setQuestions] = useState<Question[]>([]);
 

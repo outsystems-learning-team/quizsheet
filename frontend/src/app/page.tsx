@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { JSX } from 'react';
+import { useRouter } from "next/navigation";
+import type { JSX } from "react";
 
 /**
  * Home コンポーネント
@@ -27,7 +27,7 @@ export default function Home(): JSX.Element {
       <button
         className="px-6 py-3 bg-[#fa173d] text-white rounded-lg"
         // クリック時に /start ルートへ遷移
-        onClick={() => router.push('/start')}
+        onClick={() => router.push("/start")}
       >
         クイズを始める
       </button>
