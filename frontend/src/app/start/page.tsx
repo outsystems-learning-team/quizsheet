@@ -1,11 +1,23 @@
 "use client";
 
-import { QuizContext } from "@/context/QuizContext";
-import type { CategoryNameList, InitData, Question, QuestionsResponse, SheetNameList } from "@shared/types"; // 共有型があれば
-import { useRouter } from "next/navigation";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import type {
+  CategoryNameList,
+  InitData,
+  Question,
+  QuestionsResponse,
+  SheetNameList,
+} from "@shared/types";
+import { QuizContext } from "@/context/QuizContext";
 import { fetchQuizApi } from "../../lib/api";
 
+/**
+ * スタートページコンポーネント
+ * クイズの開始設定（問題数、シート、カテゴリ選択）を提供します。
+ * @returns {JSX.Element} スタートページの UI 要素
+ */
 export default function StartPage() {
   const router = useRouter();
 
@@ -24,13 +36,12 @@ export default function StartPage() {
     (async () => {
       try {
         const init = await fetchQuizApi<InitData>({
-          key: "sheet_name_list", // SPREAD_SHEET_INIT_DATA と対応
+          key: "sheet_name_list",
         });
 
         setSheets(init.sheetNameList);
         setCategories(init.categoryNameList);
 
-        // activeSheet はフロント側でも明示しておく
         if (init.sheetNameList.length) {
           setActiveSheet(init.sheetNameList[0].sheetName);
         }
@@ -47,26 +58,22 @@ export default function StartPage() {
   /* ---------------------------  form submit  --------------------------- */
   const handleStart = async () => {
     try {
-      const { questions }: QuestionsResponse = await fetchQuizApi<QuestionsResponse>({
-        key: "select_quiz",
-        targetSheet: activeSheet,
-        category: selectedCategories,
-      });
+      const { questions }: QuestionsResponse =
+        await fetchQuizApi<QuestionsResponse>({
+          key: "select_quiz",
+          targetSheet: activeSheet,
+          category: selectedCategories,
+        });
 
       if (questions.length === 0) {
         setError("選択条件に合う問題がありません");
         return;
       }
 
-      /* --- シャッフル (F-Y) --- */
-      const shuffled = [...questions];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-
-      /* --- 切り詰め --- */
-      const finalQs: Question[] = shuffled.slice(0, numQuestions);
+      /* --- シャッフル (F-Y) & 切り詰め --- */
+      const finalQs: Question[] = questions
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numQuestions);
 
       setQuestions(finalQs);
       router.push(`/quiz?count=${finalQs.length}`);
@@ -77,8 +84,8 @@ export default function StartPage() {
 
   const handleSheetChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const sheetName = e.target.value;
-    setActiveSheet(sheetName); // 選択状態更新
-    setSelectedCategories([]); // チェックをリセット
+    setActiveSheet(sheetName);
+    setSelectedCategories([]);
 
     try {
       const catList = await fetchQuizApi<CategoryNameList[]>({
@@ -86,16 +93,19 @@ export default function StartPage() {
         targetSheet: sheetName,
       });
       setCategories(catList);
-    } catch (err) {
-      console.error(err);
-      setError("カテゴリ取得に失敗しました");
+    } catch (e) {
+      setError(
+        `カテゴリ取得に失敗しました: ${e instanceof Error ? e.message : "不明なエラー"}`,
+      );
     }
   };
 
   /** チェックボックスの選択／解除をトグル */
   const handleCategoryToggle = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
-    setSelectedCategories((prev) => (e.target.checked ? [...prev, name] : prev.filter((c) => c !== name)));
+    setSelectedCategories((prev) =>
+      e.target.checked ? [...prev, name] : prev.filter((c) => c !== name),
+    );
   };
 
   /** 全て選択 */
@@ -114,7 +124,9 @@ export default function StartPage() {
       onSubmit={handleStart}
       className="max-w-md sm:max-w-lg md:max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow"
     >
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">出題設定</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">
+        出題設定
+      </h1>
 
       {loading && <p className="mb-4 text-center">ロード中...</p>}
       {error && <p className="mb-4 text-red-500 text-center">{error}</p>}
@@ -124,7 +136,7 @@ export default function StartPage() {
           <label className="block mb-1">対象問題</label>
           <select
             className="w-full border rounded p-2"
-            value={activeSheet} // ★追加
+            value={activeSheet}
             onChange={handleSheetChange}
           >
             {sheets.map((s) => (
@@ -138,18 +150,24 @@ export default function StartPage() {
 
       {!loading && !error && (
         <>
-          {/* 全選択／全解除ボタン */}
           <label className="block mb-1">カテゴリー選択</label>
           <div className="flex justify-end mb-2">
-            <button type="button" onClick={handleSelectAll} className="text-sm sm:text-base mr-2 text-[#fa173d]">
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              className="text-sm sm:text-base mr-2 text-[#fa173d]"
+            >
               全て選択
             </button>
-            <button type="button" onClick={handleDeselectAll} className="text-sm sm:text-base text-[#fa173d]">
+            <button
+              type="button"
+              onClick={handleDeselectAll}
+              className="text-sm sm:text-base text-[#fa173d]"
+            >
               全て解除
             </button>
           </div>
 
-          {/* カテゴリチェックボックス */}
           <div className="grid gap-2 mb-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {categories.map((cat) => (
               <label key={cat.id} className="flex items-center space-x-2">
@@ -160,7 +178,10 @@ export default function StartPage() {
                   onChange={handleCategoryToggle}
                   className="w-4 h-4 shrink-0"
                 />
-                <span className="truncate whitespace-nowrap overflow-hidden w-full" title={cat.categoryName}>
+                <span
+                  className="truncate whitespace-nowrap overflow-hidden w-full"
+                  title={cat.categoryName}
+                >
                   {cat.categoryName}
                 </span>
               </label>
@@ -185,7 +206,7 @@ export default function StartPage() {
       </div>
 
       <button
-        type="button" // ★これを追加
+        type="button"
         className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
         disabled={loading || !!error}
         onClick={handleStart}

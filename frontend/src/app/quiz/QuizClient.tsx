@@ -1,11 +1,12 @@
-// src/app/quiz/page.tsx
 "use client";
 
-import { JSX, useState } from "react";
+import type { JSX } from "react";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { useQuizClient } from "../../hooks/useQuizClient";
 import { QuestionCard } from "../../components/QuestionCard";
 import { QuestionFooter } from "../../components/QuestionFooter";
-import { useRouter, useSearchParams } from 'next/navigation';
 
 /**
  * クイズページ全体のコンポーネント
@@ -13,59 +14,53 @@ import { useRouter, useSearchParams } from 'next/navigation';
  * カスタムフックで用意された問題リストを受け取り、
  * 現在の問題表示と回答操作を組み合わせる。
  *
- * @returns JSX.Element
+ * @returns {JSX.Element} クイズページの UI 要素
  */
 export default function QuizClient(): JSX.Element {
   const router = useRouter();
 
-  // フックからフィルタ／シャッフル／切り詰め済みの questions を取得
   const { questions } = useQuizClient();
 
-  //問題出題数 
   const searchParams = useSearchParams();
-  const totalToAnswer = Number(searchParams.get('count') ?? 10); // デフォルト10
+  const totalToAnswer = Math.min(
+    questions.length,
+    Number(searchParams.get("count") ?? 10),
+  );
 
-  // 現在の問題インデックス
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  // ユーザーが選択した選択肢インデックス
   const [selected, setSelected] = useState<number | null>(null);
 
-  //回答状況
   const [answeredCount, setAnsweredCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [streak, setStreak] = useState(0);
-  //const [maxStreak, setMaxStreak] = useState(0);
 
-  const [categoryStats, setCategoryStats] = useState<Record<string, { total: number; correct: number }>>({});
+  const [categoryStats, setCategoryStats] = useState<
+    Record<string, { total: number; correct: number }>
+  >({});
 
   const current = questions[currentIndex] ?? null;
-
-  
 
   /**
    * 次の問題へ進むハンドラ
    */
   const handleNext = (): void => {
-    
-  //最終問題問題か判定
-  const isLast =
-  answeredCount >= totalToAnswer || currentIndex + 1 >= questions.length;
+    const isLast =
+      answeredCount >= totalToAnswer || currentIndex >= questions.length - 1;
 
-  //最終問題の場合は回答結果画面へ進む
-  if (isLast) {
-    const params = new URLSearchParams({
-      answered: String(answeredCount),
-      correct: String(correctCount),
-      streak: String(streak),
-      categories: JSON.stringify(categoryStats),
-    });
+    if (isLast) {
+      const params = new URLSearchParams({
+        answered: String(answeredCount),
+        correct: String(correctCount),
+        streak: String(streak),
+        categories: JSON.stringify(categoryStats),
+      });
 
-    router.push(`/result?${params.toString()}`);
-    return; // ← これで以降の setState を止める
-  }
+      router.push(`/result?${params.toString()}`);
+      return;
+    }
 
     setSelected(null);
-    setCurrentIndex((i) => Math.min(i + 1, questions.length - 1));
+    setCurrentIndex((i) => i + 1);
   };
 
   const handleAnswer = (selectedIndex: number) => {
@@ -76,9 +71,9 @@ export default function QuizClient(): JSX.Element {
     if (isCorrect) {
       setCorrectCount((prev) => prev + 1);
       setStreak((prev) => {
-       const newStreak = prev + 1;
-       //setMaxStreak((m) => Math.max(m, newStreak));
-       return newStreak;
+        const newStreak = prev + 1;
+
+        return newStreak;
       });
     } else {
       setStreak(0);
@@ -100,51 +95,47 @@ export default function QuizClient(): JSX.Element {
    * クイズ終了ハンドラ（ルートに戻るなど実装可）
    */
   const handleFinish = (): void => {
-    // 例: トップページへ戻る
-    window.location.href = "/";
+    router.push("/");
   };
 
-  // 問題がない場合のフォールバック表示
   if (!current) {
     return <p className="p-6 text-center">問題がありません</p>;
   }
 
   return (
     <>
-      {/* 回答状況 */}
       <div className="mb-4 flex flex-wrap justify-center gap-3 max-w-2xl mx-auto px-4">
-        {/* 回答数 */}
         <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
           <p className="text-xs text-gray-500 whitespace-nowrap">回答数</p>
-          <p className="font-bold text-sm whitespace-nowrap">{answeredCount} / {questions.length}</p>
+          <p className="font-bold text-sm whitespace-nowrap">
+            {answeredCount} / {questions.length}
+          </p>
         </div>
-        {/* 正答数 */}
         <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
           <p className="text-xs text-gray-500 whitespace-nowrap">正答数</p>
           <p className="font-bold text-sm whitespace-nowrap">{correctCount}</p>
-          </div>
-        {/* 正答率 */}
+        </div>
         <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
           <p className="text-xs text-gray-500 whitespace-nowrap">正答率</p>
           <p className="font-bold text-sm whitespace-nowrap">
-            {answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0}%
+            {answeredCount > 0
+              ? Math.round((correctCount / answeredCount) * 100)
+              : 0}
+            %
           </p>
         </div>
-        {/* 連続正解 */}
         <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
           <p className="text-xs text-gray-500 whitespace-nowrap">連続正解</p>
           <p className="font-bold text-sm whitespace-nowrap">{streak}</p>
         </div>
       </div>
 
-      {/* 問題文＋選択肢表示 */}
       <QuestionCard
         question={current}
         selected={selected}
         onSelect={handleAnswer}
       />
 
-      {/* 回答後に解説＋ボタン表示 */}
       {selected !== null && (
         <QuestionFooter
           explanation={current.explanation}
