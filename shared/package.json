@@ -1,10 +1,13 @@
 {
   "name": "@quizsheet/shared",
   "version": "1.0.0",
-  "main": "constants.ts",
-  "types": "types.d.ts",
-  "files": [
-    "constants.ts",
-    "types.d.ts"
-  ]
+  "description": "Shared utilities and types for Quizsheet project",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

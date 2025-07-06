@@ -1,4 +1,4 @@
-import {QuestionsRequest} from "../../../shared/types"
+import {QuestionsRequest} from "@quizsheet/shared/types"
 /* utils/fetchQuizApi.ts ------------------------------------------- */
 type ApiResponse<Success> =
   | { status: 'ok'; data: Success }

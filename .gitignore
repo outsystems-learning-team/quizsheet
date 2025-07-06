@@ -1,20 +1,23 @@
 # ── Node modules ─────────────────────────────────
 node_modules/
-frontend/node_modules/
-backend/node_modules/
 
 # ── Next.js （フロントエンド） ────────────────
 frontend/.next/
 frontend/out/
 
 # ── ビルド成果物（バックエンド） ─────────────
-backend/dist/
+backend/dist
+shared/dist
 
 # ── 環境設定ファイル ─────────────────────────────
 # 環境変数ファイルや認証キーは絶対にコミットしない
-*.env
-backend/.env*
-credentials.json
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env* # backend固有の環境設定ファイルがある場合
 
 # ── OS／エディタ固有 ───────────────────────────
 .DS_Store

@@ -1,27 +1,28 @@
 {
-  "name": "backend",
+  "name": "quizsheet-backend",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
-  "type": "module",
+  "scripts": {
+    "build": "node node_modules/webpack-cli/bin/cli.js",
+    "dev": "node node_modules/webpack-cli/bin/cli.js --watch",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write ."
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "dependencies": {
+    "@quizsheet/shared": "file:../shared"
+  },
   "devDependencies": {
-    "@quizsheet/shared": "file:../sharedcd",
-    "@google/clasp": "^3.0.4-alpha",
-    "@types/google-apps-script": "^1.0.97",
-    "@typescript-eslint/eslint-plugin": "^8.35.0",
-    "@typescript-eslint/parser": "^8.35.0",
-    "copy-webpack-plugin": "^13.0.0",
-    "dotenv-webpack": "^8.1.0",
-    "eslint": "^9.29.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.5.0",
-    "prettier": "^3.6.0",
-    "ts-loader": "^9.5.2",
-    "typescript": "^5.8.3",
-    "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.83",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.14.1",
+    "eslint-config-prettier": "^9.1.0",
+    "ts-loader": "^9.5.1",
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.0.0"
   }
 }

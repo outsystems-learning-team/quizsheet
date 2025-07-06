@@ -1,36 +1,30 @@
 {
-  "name": "quizsheet",
+  "name": "quizsheet-monorepo",
   "version": "1.0.0",
-  "private": true,                                     
-  "description": "Monorepo for QuizSheet (Next.js frontend, GAS backend, shared utilities)",
-  "license": "MIT",
+  "description": "Monorepo for Quizsheet project",
+  "private": true,
   "workspaces": [
-    "frontend",
     "backend",
+    "frontend",
     "shared"
   ],
-  "engines": {
-    "node": ">=18",
-    "npm": ">=9"
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "lint": "npm run lint --workspace=backend && npm run lint --workspace=frontend && npm run lint --workspace=shared",
+    "format": "npm run format --workspaces"
   },
-"scripts": {
-  "clean": "rimraf node_modules **/node_modules",
-  "postinstall": "npm run prepare --workspaces --if-present",
-
-  "dev": "npm -w frontend run dev",
-  "build": "npm -w backend run build && npm -w frontend run build",
-  "build:backend": "npm -w backend run build",
-  "build:frontend": "npm -w frontend run build",
-
-  "push": "npm -w backend run push",
-
-  "lint": "npm run lint --workspaces --if-present",
-  "lint:fix": "npm run lint:fix --workspaces --if-present",
-  "format": "npm run format --workspaces --if-present"
-},
-
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "rimraf": "^5.0.5",       
-    "prettier": "^3.6.0"       
+    "@types/node": "^20.14.10",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.4",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0"
   }
 }
