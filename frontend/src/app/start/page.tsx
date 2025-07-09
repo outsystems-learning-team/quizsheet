@@ -86,6 +86,35 @@ export default function StartPage() {
     }
   };
 
+  const handleSelectQuestion = async () => {
+    setIsLoading(true);
+    try {
+      const { questions }: QuestionsResponse =
+        await fetchQuizApi<QuestionsResponse>({
+          key: "select_quiz",
+          targetSheet: activeSheet,
+          category: selectedCategories,
+        });
+
+      if (questions.length === 0) {
+        setError("選択条件に合う問題がありません");
+        return;
+      }
+
+      /* --- シャッフル (F-Y) & 切り詰め --- */
+      const finalQs: Question[] = questions
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numQuestions);
+
+      setQuestions(finalQs);
+      router.push("/select");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "取得失敗");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSheetChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const sheetName = e.target.value;
     setActiveSheet(sheetName);
@@ -210,15 +239,27 @@ export default function StartPage() {
           className="w-full border border-gray-300 rounded p-2"
         />
       </div>
-
-      <button
-        type="button"
-        className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
-        disabled={isLoading || !!error}
-        onClick={handleStart}
-      >
-        スタート
-      </button>
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <button
+          type="button"
+          className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
+          disabled={isLoading || !!error}
+          onClick={handleStart}
+        >
+          スタート
+        </button>
+        <button
+          type="button"
+          className="w-full sm:w-1/2 py-3 rounded-lg text-[#fa173d] border border-[#fa173d] hover:bg-[#fa173d]/10"
+          disabled={isLoading || !!error}
+          onClick={handleStart}
+        >
+          問題選択
+        </button>
+      </div>
+      
+      
       {isLoading && <LoadingOverlay />}
     </form>
   );
