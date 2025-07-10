@@ -13,8 +13,7 @@ import { QuizContext } from "../context/QuizContext";
  */
 export function useQuizClient() {
   const { questions, isLoading, setIsLoading } = useContext(QuizContext);
-  const reset = () => {};
-  return { questions, isLoading, setIsLoading, reset };
+  return { questions, isLoading, setIsLoading };
 }
 
 export { QuizContext };
