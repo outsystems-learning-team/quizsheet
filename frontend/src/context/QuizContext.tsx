@@ -24,6 +24,8 @@ export type QuizContextValue = {
   setStreak: Dispatch<SetStateAction<number>>;
   categoryStats: Record<string, { total: number; correct: number }>;
   setCategoryStats: Dispatch<SetStateAction<Record<string, { total: number; correct: number }>>>;
+  incorrectQuestions: Question[];
+  setIncorrectQuestions: Dispatch<SetStateAction<Question[]>>;
 };
 
 /**
@@ -45,6 +47,8 @@ export const QuizContext = createContext<QuizContextValue>({
   setStreak: () => {},
   categoryStats: {},
   setCategoryStats: () => {},
+  incorrectQuestions: [],
+  setIncorrectQuestions: () => {},
 });
 
 /**
@@ -67,6 +71,7 @@ export function QuizProvider({
   const [correctCount, setCorrectCount] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
   const [categoryStats, setCategoryStats] = useState<Record<string, { total: number; correct: number }>>({});
+  const [incorrectQuestions, setIncorrectQuestions] = useState<Question[]>([]);
 
   return (
     <QuizContext.Provider value={{
@@ -82,6 +87,8 @@ export function QuizProvider({
       setStreak,
       categoryStats,
       setCategoryStats,
+      incorrectQuestions,
+      setIncorrectQuestions,
     }}>
       {children}
     </QuizContext.Provider>
