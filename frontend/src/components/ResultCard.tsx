@@ -21,7 +21,7 @@ const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onC
           type="checkbox"
           checked={isChecked}
           onChange={onCheckboxChange}
-          className="mr-4 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          className="mr-4 h-4 w-4 text-blue-600 border-border-color rounded focus:ring-blue-500"
           onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
         />
         <button
@@ -85,20 +85,20 @@ export const ResultCard: FC<ResultCardProps> = ({
 
       {/* 統計表示 */}
       <div className="grid grid-cols-2 gap-4 text-center mb-6">
-        <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">回答数</p>
+        <div className="bg-primary-bg p-4 rounded-lg shadow-sm">
+          <p className="text-sm">回答数</p>
           <p className="text-xl font-bold">{answered}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">正答数</p>
+        <div className="bg-primary-bg p-4 rounded-lg shadow-sm">
+          <p className="text-sm">正答数</p>
           <p className="text-xl font-bold">{correct}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">正答率</p>
+        <div className="bg-primary-bg p-4 rounded-lg shadow-sm">
+          <p className="text-sm">正答率</p>
           <p className="text-xl font-bold">{rate}%</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">連続正解</p>
+        <div className="bg-primary-bg p-4 rounded-lg shadow-sm">
+          <p className="text-sm">連続正解</p>
           <p className="text-xl font-bold">{streak}</p>
         </div>
       </div>
@@ -110,7 +110,7 @@ export const ResultCard: FC<ResultCardProps> = ({
           {Object.entries(categoryStats).map(([category, stat]) => (
             <li
               key={category}
-              className="flex items-center bg-gray-50 px-4 py-2 rounded-md shadow-sm"
+              className="flex items-center bg-primary-bg px-4 py-2 rounded-md shadow-sm"
             >
               <span className="flex-1 min-w-0 truncate whitespace-nowrap overflow-hidden mr-2 font-medium">
                 {category}
@@ -130,13 +130,13 @@ export const ResultCard: FC<ResultCardProps> = ({
           <div className="flex justify-end space-x-2 mb-4">
             <button
               onClick={handleSelectAll}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 border border-border-color rounded-md text-sm font-medium hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               すべて選択
             </button>
             <button
               onClick={handleDeselectAll}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 border border-border-color rounded-md text-sm font-medium hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               すべて解除
             </button>
@@ -149,9 +149,9 @@ export const ResultCard: FC<ResultCardProps> = ({
                 isChecked={checkedQuestionIds.includes(q.id)}
                 onCheckboxChange={() => handleCheckboxChange(q.id)}
               >
-                <div className="bg-red-50 p-4 rounded-lg">
+                <div className="bg-primary-bg p-4 rounded-lg">
                   <p>正解: {q.choices[q.answerIndex]}</p>
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm mt-2">
                     解説: {q.explanation}
                   </p>
                 </div>

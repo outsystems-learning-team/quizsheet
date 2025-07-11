@@ -28,7 +28,7 @@ export const QuestionCard: FC<QuestionCardProps> = ({
   return (
     <div className="max-w-2xl mx-auto p-6">
       {/* カテゴリ名 */}
-      <p className="text-sm text-gray-500 mb-1">{question.category}</p>
+      <p className="text-sm mb-1">{question.category}</p>
       {/* 問題文 */}
       <h2 className="text-xl font-semibold mb-4">{question.question}</h2>
 
@@ -48,11 +48,11 @@ export const QuestionCard: FC<QuestionCardProps> = ({
             } else if (isSelected) {
               base += "bg-red-100 border border-red-500 text-red-800";
             } else {
-              base += "bg-gray-100 border border-transparent text-gray-700";
+              base += "bg-primary-bg border border-transparent";
             }
           } else {
             // 未回答：通常状態
-            base += "bg-white border border-gray-300 hover:bg-[#fa173d]/10";
+            base += "bg-primary-bg border border-border-color hover:bg-[#fa173d]/10";
           }
 
           return (
