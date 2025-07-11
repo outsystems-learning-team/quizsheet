@@ -51,7 +51,7 @@ export default function SqlTestPage() {
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="border border-gray-300 p-2 rounded w-full"
+            className="border border-border-color p-2 rounded w-full"
             placeholder="Enter category"
           />
           <button
@@ -68,7 +68,7 @@ export default function SqlTestPage() {
       {result !== null && (
         <div className="mt-4">
           <h2 className="text-xl font-semibold">Result:</h2>
-          <pre className="bg-gray-100 p-4 rounded mt-2 overflow-auto">{JSON.stringify(result, null, 2)}</pre>
+          <pre className="bg-primary-bg p-4 rounded mt-2 overflow-auto">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
     </div>

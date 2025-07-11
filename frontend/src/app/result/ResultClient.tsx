@@ -29,7 +29,7 @@ export default function ResultPage() {
   };
 
   return (
-    <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
+    <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto bg-primary-bg p-4 sm:p-6 rounded-lg shadow">
       <ResultCard
         answered={answeredCount}
         correct={correctCount}

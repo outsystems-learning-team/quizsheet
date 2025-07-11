@@ -44,9 +44,9 @@ export const QuestionFooter: FC<QuestionFooterProps> = ({
         </button>
       </div>
       {/* 解説表示エリア */}
-      <div className="bg-gray-50 border border-gray-300 p-4 rounded-lg">
+      <div className="bg-primary-bg border border-border-color p-4 rounded-lg">
         <h3 className="font-medium mb-2">解説</h3>
-        <pre className="whitespace-pre-wrap text-gray-800 text-sm">
+        <pre className="whitespace-pre-wrap text-sm">
           {explanation}
         </pre>
       </div>

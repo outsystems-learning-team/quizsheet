@@ -88,18 +88,18 @@ export default function QuizClient(): JSX.Element {
   return (
     <>
       <div className="mb-4 flex flex-wrap justify-center gap-3 max-w-2xl mx-auto px-4">
-        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
-          <p className="text-xs text-gray-500 whitespace-nowrap">回答数</p>
+        <div className="w-32 bg-primary-bg border border-border-color px-3 py-2 rounded-lg text-center">
+          <p className="text-xs whitespace-nowrap">回答数</p>
           <p className="font-bold text-sm whitespace-nowrap">
             {answeredCount} / {questions.length}
           </p>
         </div>
-        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
-          <p className="text-xs text-gray-500 whitespace-nowrap">正答数</p>
+        <div className="w-32 bg-primary-bg border border-border-color px-3 py-2 rounded-lg text-center">
+          <p className="text-xs whitespace-nowrap">正答数</p>
           <p className="font-bold text-sm whitespace-nowrap">{correctCount}</p>
         </div>
-        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
-          <p className="text-xs text-gray-500 whitespace-nowrap">正答率</p>
+        <div className="w-32 bg-primary-bg border border-border-color px-3 py-2 rounded-lg text-center">
+          <p className="text-xs whitespace-nowrap">正答率</p>
           <p className="font-bold text-sm whitespace-nowrap">
             {answeredCount > 0
               ? Math.round((correctCount / answeredCount) * 100)
@@ -107,8 +107,8 @@ export default function QuizClient(): JSX.Element {
             %
           </p>
         </div>
-        <div className="w-32 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg text-center">
-          <p className="text-xs text-gray-500 whitespace-nowrap">連続正解</p>
+        <div className="w-32 bg-primary-bg border border-border-color px-3 py-2 rounded-lg text-center">
+          <p className="text-xs whitespace-nowrap">連続正解</p>
           <p className="font-bold text-sm whitespace-nowrap">{streak}</p>
         </div>
       </div>
