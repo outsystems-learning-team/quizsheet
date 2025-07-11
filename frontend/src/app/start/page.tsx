@@ -85,8 +85,10 @@ export default function StartPage() {
         return;
       }
 
+      const finalNumQuestions = selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current);
+
       // クイズデータの取得
-      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}`);
+      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}&limit=${finalNumQuestions}`);
 
       if (!quizzesRes.ok) {
         const errorText = await quizzesRes.text(); // Read response body as text for more info

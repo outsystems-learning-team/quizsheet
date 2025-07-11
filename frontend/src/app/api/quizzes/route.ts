@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const quizName = searchParams.get('quiz_name');
   const categories = searchParams.get('categories'); // categoriesはカンマ区切り文字列を想定
+  const limit = searchParams.get('limit'); // limitは問題数の上限を想定
 
   if (!quizName) {
     return new NextResponse('Quiz name is required', { status: 400 });
@@ -15,13 +16,19 @@ export async function GET(request: Request) {
 
   try {
     const categoryArray = categories.split(',');
-    const result = await db.execute(sql`
+    let query = sql`
       SELECT *
       FROM quiz_list
       WHERE quiz_name = ${quizName}
       AND category IN (${categoryArray})
       ORDER BY id ASC
-    `);
+    `;
+
+    if (limit) {
+      query = sql`${query} LIMIT ${parseInt(limit, 10)}`;
+    }
+
+    const result = await db.execute(query);
     const quizData: QuizRow[] = result.rows as QuizRow[];
 
     // Question 型に変換
