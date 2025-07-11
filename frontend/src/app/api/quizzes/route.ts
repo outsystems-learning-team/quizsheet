@@ -27,9 +27,25 @@ export async function GET(request: Request) {
     // Question 型に変換
     const formattedQuizData = quizData.map((row: any) => {
       const choices = [row.choice1, row.choice2, row.choice3, row.choice4].filter(
-        (choice) => choice !== null && choice !== undefined
+        (choice) => typeof choice === 'string' && choice.trim() !== ''
       );
-      const answerIndex = choices.indexOf(row.answer);
+      let answerIndex: number;
+      if (typeof row.answer === 'number') {
+        // answer が数値の場合、それを直接インデックスとして使用 (1始まりを想定し、0始まりに変換)
+        answerIndex = row.answer - 1;
+      } else if (typeof row.answer === 'string') {
+        // answer が文字列の場合、文字列比較でインデックスを探す
+        answerIndex = choices.findIndex(
+          (choice) =>
+            typeof choice === 'string' &&
+            choice.trim().toLowerCase() === row.answer.trim().toLowerCase()
+        );
+      } else {
+        // その他の型の場合は -1 (不正な値)
+        answerIndex = -1;
+      }
+
+      
 
       return {
         id: row.id,

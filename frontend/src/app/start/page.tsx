@@ -117,7 +117,7 @@ export default function StartPage() {
       const finalQs: Question[] = processedQuestions.slice(0, numQuestions);
 
       setQuestions(finalQs);
-      router.push(`/quiz?count=${finalQs.length}`);
+      router.push(`/quiz`);
     } catch (e) {
       console.error("Error in handleStart:", e); // Log the full error
       setError(e instanceof Error ? e.message : "取得失敗");
@@ -177,7 +177,7 @@ export default function StartPage() {
 
       {error && <p className="mb-4 text-red-500 text-center">{error}</p>}
 
-      {!isLoading && !error && (
+      {!isLoading && (
         <div className="mb-4">
           <label className="block mb-1">対象問題</label>
           <select
@@ -194,7 +194,7 @@ export default function StartPage() {
         </div>
       )}
 
-      {!isLoading && !error && (
+      {!isLoading && (
         <>
           <label className="block mb-1">カテゴリー選択</label>
           <div className="flex justify-end mb-2">
@@ -283,7 +283,7 @@ export default function StartPage() {
       <button
         type="button"
         className="w-full py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
-        disabled={isLoading || !!error}
+        
         onClick={handleStart}
       >
         スタート

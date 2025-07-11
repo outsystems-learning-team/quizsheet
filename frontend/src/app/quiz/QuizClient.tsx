@@ -22,11 +22,7 @@ export default function QuizClient(): JSX.Element {
 
   const { questions, isLoading } = useQuizClient();
 
-  const searchParams = useSearchParams();
-  const totalToAnswer = Math.min(
-    questions.length,
-    Number(searchParams.get("count") ?? 10),
-  );
+  const totalToAnswer = questions.length;
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selected, setSelected] = useState<number | null>(null);
