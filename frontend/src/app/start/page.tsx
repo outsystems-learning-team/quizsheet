@@ -205,14 +205,14 @@ export default function StartPage() {
             <button
               type="button"
               onClick={handleSelectAll}
-              className="text-sm sm:text-base mr-2 text-[#fa173d]"
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-2"
             >
               全て選択
             </button>
             <button
               type="button"
               onClick={handleDeselectAll}
-              className="text-sm sm:text-base text-[#fa173d]"
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               全て解除
             </button>

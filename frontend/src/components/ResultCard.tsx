@@ -1,36 +1,83 @@
 "use client";
 
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
+import { useState } from "react";
+import { Question } from "@shared/types";
+
+interface AccordionItemProps {
+  title: ReactNode;
+  children: ReactNode;
+  isChecked: boolean;
+  onCheckboxChange: () => void;
+}
+
+const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onCheckboxChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b">
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          checked={isChecked}
+          onChange={onCheckboxChange}
+          className="mr-4 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
+        />
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full text-left py-4 flex justify-between items-center focus:outline-none"
+        >
+          <span className="font-semibold">{title}</span>
+          <span>{isOpen ? "▲" : "▼"}</span>
+        </button>
+      </div>
+      {isOpen && <div className="pb-4 pl-8">{children}</div>}
+    </div>
+  );
+};
 
 export interface ResultCardProps {
   answered: number;
   correct: number;
   streak: number;
   categoryStats: Record<string, { total: number; correct: number }>;
+  incorrectQuestions: Question[];
   onRestart?: () => void;
+  onRetrySelected?: (questionIds: number[]) => void;
 }
 
-/**
- * クイズ結果を表示するカードコンポーネント
- *
- * @param {number} props.answered - 回答した問題数
- * @param {number} props.correct - 正解した問題数
- * @param {number} props.streak - 連続正解数
- * @param {Record<string, { total: number; correct: number }>} props.categoryStats - カテゴリごとの統計情報
- * @param {() => void} [props.onRestart] - 再スタートボタンがクリックされたときのコールバック
- * @returns {JSX.Element} 結果カードの UI 要素
- */
 export const ResultCard: FC<ResultCardProps> = ({
   answered,
   correct,
   streak,
   categoryStats,
+  incorrectQuestions,
   onRestart,
+  onRetrySelected,
 }) => {
   const rate = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+  const [checkedQuestionIds, setCheckedQuestionIds] = useState<number[]>(
+    incorrectQuestions.map((q) => q.id)
+  );
+
+  const handleCheckboxChange = (questionId: number) => {
+    setCheckedQuestionIds((prev) =>
+      prev.includes(questionId)
+        ? prev.filter((id) => id !== questionId)
+        : [...prev, questionId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setCheckedQuestionIds(incorrectQuestions.map((q) => q.id));
+  };
+
+  const handleDeselectAll = () => {
+    setCheckedQuestionIds([]);
+  };
 
   return (
-    // <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto p-6 bg-white shadow-lg rounded-xl">
     <div className="mb-6">
       <h2 className="text-2xl font-bold mb-6 text-center text-[#fa173d]">
         回答結果
@@ -75,6 +122,54 @@ export const ResultCard: FC<ResultCardProps> = ({
           ))}
         </ul>
       </div>
+
+      {/* 間違えた問題 */}
+      {incorrectQuestions.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-2">間違えた問題</h3>
+          <div className="flex justify-end space-x-2 mb-4">
+            <button
+              onClick={handleSelectAll}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              すべて選択
+            </button>
+            <button
+              onClick={handleDeselectAll}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              すべて解除
+            </button>
+          </div>
+          <div>
+            {incorrectQuestions.map((q) => (
+              <AccordionItem
+                key={q.id}
+                title={q.question}
+                isChecked={checkedQuestionIds.includes(q.id)}
+                onCheckboxChange={() => handleCheckboxChange(q.id)}
+              >
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <p>正解: {q.choices[q.answerIndex]}</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    解説: {q.explanation}
+                  </p>
+                </div>
+              </AccordionItem>
+            ))}
+          </div>
+          {checkedQuestionIds.length > 0 && onRetrySelected && (
+            <div className="text-center mt-6">
+              <button
+                onClick={() => onRetrySelected(checkedQuestionIds)}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition"
+              >
+                選択した問題を再挑戦する
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 戻るボタン */}
       {onRestart && (
