@@ -1,9 +1,9 @@
 "use client";
 
-import type { ReactNode, JSX } from "react";
+import type { ReactNode, JSX, Dispatch, SetStateAction } from "react";
 import { createContext, useState } from "react";
 
-import { Question } from "../../../shared/types";
+import { Question } from "@shared/types";
 
 /**
  * QuizContext で管理する状態の型定義
@@ -16,6 +16,14 @@ export type QuizContextValue = {
   setQuestions: (qs: Question[]) => void;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  answeredCount: number;
+  setAnsweredCount: Dispatch<SetStateAction<number>>;
+  correctCount: number;
+  setCorrectCount: Dispatch<SetStateAction<number>>;
+  streak: number;
+  setStreak: Dispatch<SetStateAction<number>>;
+  categoryStats: Record<string, { total: number; correct: number }>;
+  setCategoryStats: Dispatch<SetStateAction<Record<string, { total: number; correct: number }>>>;
 };
 
 /**
@@ -29,6 +37,14 @@ export const QuizContext = createContext<QuizContextValue>({
   setQuestions: () => {},
   isLoading: false,
   setIsLoading: () => {},
+  answeredCount: 0,
+  setAnsweredCount: () => {},
+  correctCount: 0,
+  setCorrectCount: () => {},
+  streak: 0,
+  setStreak: () => {},
+  categoryStats: {},
+  setCategoryStats: () => {},
 });
 
 /**
@@ -47,9 +63,26 @@ export function QuizProvider({
 }): JSX.Element {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [answeredCount, setAnsweredCount] = useState<number>(0);
+  const [correctCount, setCorrectCount] = useState<number>(0);
+  const [streak, setStreak] = useState<number>(0);
+  const [categoryStats, setCategoryStats] = useState<Record<string, { total: number; correct: number }>>({});
 
   return (
-    <QuizContext.Provider value={{ questions, setQuestions, isLoading, setIsLoading }}>
+    <QuizContext.Provider value={{
+      questions,
+      setQuestions,
+      isLoading,
+      setIsLoading,
+      answeredCount,
+      setAnsweredCount,
+      correctCount,
+      setCorrectCount,
+      streak,
+      setStreak,
+      categoryStats,
+      setCategoryStats,
+    }}>
       {children}
     </QuizContext.Provider>
   );

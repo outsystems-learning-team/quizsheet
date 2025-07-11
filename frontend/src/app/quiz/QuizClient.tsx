@@ -1,10 +1,10 @@
 "use client";
 
 import type { JSX } from "react";
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useContext, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { useQuizClient } from "../../hooks/useQuizClient";
+import { QuizContext } from "@/context/QuizContext";
 import { QuestionCard } from "../../components/QuestionCard";
 import { QuestionFooter } from "../../components/QuestionFooter";
 import { LoadingOverlay } from "../../components/LoadingOverlay";
@@ -20,24 +20,12 @@ import { LoadingOverlay } from "../../components/LoadingOverlay";
 export default function QuizClient(): JSX.Element {
   const router = useRouter();
 
-  const { questions, isLoading } = useQuizClient();
+  const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats } = useContext(QuizContext);
 
-  const searchParams = useSearchParams();
-  const totalToAnswer = Math.min(
-    questions.length,
-    Number(searchParams.get("count") ?? 10),
-  );
+  const totalToAnswer = questions.length;
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selected, setSelected] = useState<number | null>(null);
-
-  const [answeredCount, setAnsweredCount] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [streak, setStreak] = useState(0);
-
-  const [categoryStats, setCategoryStats] = useState<
-    Record<string, { total: number; correct: number }>
-  >({});
 
   const current = questions[currentIndex] ?? null;
 
@@ -49,14 +37,7 @@ export default function QuizClient(): JSX.Element {
       answeredCount >= totalToAnswer || currentIndex >= questions.length - 1;
 
     if (isLast) {
-      const params = new URLSearchParams({
-        answered: String(answeredCount),
-        correct: String(correctCount),
-        streak: String(streak),
-        categories: JSON.stringify(categoryStats),
-      });
-
-      router.push(`/result?${params.toString()}`);
+      router.push(`/result`);
       return;
     }
 
