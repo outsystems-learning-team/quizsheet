@@ -2,7 +2,7 @@
 
 import type { JSX } from "react";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { useQuizClient } from "../../hooks/useQuizClient";
 import { QuestionCard } from "../../components/QuestionCard";

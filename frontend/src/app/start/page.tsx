@@ -18,18 +18,7 @@ interface Category {
   category_name: string;
 }
 
-interface Question {
-  id: number;
-  quiz_name: string;
-  category: string;
-  question: string;
-  choice1: string;
-  choice2: string;
-  choice3: string;
-  choice4: string;
-  answer: string;
-  explanation: string;
-}
+import { Question } from "@shared/types";
 
 /**
  * スタートページコンポーネント
@@ -76,7 +65,7 @@ export default function StartPage() {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [setIsLoading]);
 
   /* ---------------------------  form submit  --------------------------- */
   const handleStart = async () => {

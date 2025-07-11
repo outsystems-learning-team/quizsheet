@@ -3,7 +3,7 @@
 import type { ReactNode, JSX } from "react";
 import { createContext, useState } from "react";
 
-import { Question } from "../../../shared/types";
+import { Question } from "@shared/types";
 
 /**
  * QuizContext で管理する状態の型定義

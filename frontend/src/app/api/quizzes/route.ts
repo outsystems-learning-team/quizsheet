@@ -22,10 +22,22 @@ export async function GET(request: Request) {
       AND category IN (${categoryArray})
       ORDER BY id ASC
     `);
-    const quizData = result.rows;
+    const quizData: QuizRow[] = result.rows as QuizRow[];
 
     // Question 型に変換
-    const formattedQuizData = quizData.map((row: any) => {
+    type QuizRow = {
+      id: number;
+      quiz_name: string;
+      category: string;
+      question: string;
+      choice1: string | null;
+      choice2: string | null;
+      choice3: string | null;
+      choice4: string | null;
+      answer: string | number;
+      explanation: string;
+    };
+    const formattedQuizData = quizData.map((row: QuizRow) => {
       const choices = [row.choice1, row.choice2, row.choice3, row.choice4].filter(
         (choice) => typeof choice === 'string' && choice.trim() !== ''
       );
@@ -38,7 +50,7 @@ export async function GET(request: Request) {
         answerIndex = choices.findIndex(
           (choice) =>
             typeof choice === 'string' &&
-            choice.trim().toLowerCase() === row.answer.trim().toLowerCase()
+            typeof row.answer === 'string' && choice.trim().toLowerCase() === row.answer.trim().toLowerCase()
         );
       } else {
         // その他の型の場合は -1 (不正な値)

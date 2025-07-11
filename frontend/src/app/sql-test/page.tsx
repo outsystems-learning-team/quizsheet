@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function SqlTestPage() {
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState('クライアント変数');
@@ -17,10 +17,10 @@ export default function SqlTestPage() {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
+      const data: unknown = await response.json();
       setResult(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "An unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function SqlTestPage() {
 
       {loading && <p className="mt-4">Loading...</p>}
       {error && <p className="mt-4 text-red-500">Error: {error}</p>}
-      {result && (
+      {result !== null && (
         <div className="mt-4">
           <h2 className="text-xl font-semibold">Result:</h2>
           <pre className="bg-gray-100 p-4 rounded mt-2 overflow-auto">{JSON.stringify(result, null, 2)}</pre>
