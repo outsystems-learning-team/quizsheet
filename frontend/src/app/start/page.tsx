@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useContext, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { QuizContext } from "@/context/QuizContext";
@@ -29,7 +29,14 @@ export default function StartPage() {
   const router = useRouter();
 
   /* ------------------------------  state  ------------------------------ */
-  const [numQuestions, setNumQuestions] = useState(20);
+  const [selectedNumQuestionsOption, setSelectedNumQuestionsOption] = useState<string>("20");
+  const selectedNumQuestionsOptionRef = useRef(selectedNumQuestionsOption);
+  useEffect(() => { selectedNumQuestionsOptionRef.current = selectedNumQuestionsOption; }, [selectedNumQuestionsOption]);
+
+  const [freeNumQuestions, setFreeNumQuestions] = useState<number>(20);
+  const freeNumQuestionsRef = useRef(freeNumQuestions);
+  useEffect(() => { freeNumQuestionsRef.current = freeNumQuestions; }, [freeNumQuestions]);
+
   const [quizNames, setQuizNames] = useState<QuizName[]>([]); // sheets -> quizNames
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +75,7 @@ export default function StartPage() {
   }, [setIsLoading]);
 
   /* ---------------------------  form submit  --------------------------- */
-  const handleStart = async () => {
+  const handleStart = useCallback(async () => {
     setIsLoading(true);
     setError(null); // Clear previous errors
     try {
@@ -103,7 +110,7 @@ export default function StartPage() {
           ? [...questions].sort(() => Math.random() - 0.5)
           : questions;
 
-      const finalQs: Question[] = processedQuestions.slice(0, numQuestions);
+      const finalQs: Question[] = processedQuestions.slice(0, selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current));
 
       setQuestions(finalQs);
       router.push(`/quiz`);
@@ -113,7 +120,7 @@ export default function StartPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedCategories, activeQuizName, questionOrder, setQuestions, setIsLoading, router]);
 
   const handleQuizNameChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const quizName = e.target.value;
@@ -225,19 +232,46 @@ export default function StartPage() {
         </>
       )}
 
-      {/* 問題数入力欄 */}
+      {/* 問題数選択 */}
       <div className="mb-4">
-        <label htmlFor="numQuestions" className="block mb-1">
-          問題数
-        </label>
-        <input
-          id="numQuestions"
-          type="number"
-          min={1}
-          value={numQuestions}
-          onChange={(e) => setNumQuestions(Number(e.target.value))}
-          className="w-full border border-gray-300 rounded p-2"
-        />
+        <label className="block mb-1">問題数</label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {[5, 10, 20].map((num) => (
+            <label key={num} className="flex items-center">
+              <input
+                type="radio"
+                name="numQuestionsOption"
+                value={String(num)}
+                checked={selectedNumQuestionsOption === String(num)}
+                onChange={(e) => {
+                  setSelectedNumQuestionsOption(e.target.value);
+                }}
+                className="w-4 h-4"
+              />
+              <span className="ml-2">{`${num}問`}</span>
+            </label>
+          ))}
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="numQuestionsOption"
+              value="free"
+              checked={selectedNumQuestionsOption === "free"}
+              onChange={(e) => setSelectedNumQuestionsOption(e.target.value)}
+              className="w-4 h-4"
+            />
+            <span className="ml-2">自由</span>
+          </label>
+          {selectedNumQuestionsOption === "free" && (
+            <input
+              type="number"
+              min={1}
+              value={freeNumQuestions}
+              onChange={(e) => setFreeNumQuestions(Number(e.target.value))}
+              className="w-24 border border-gray-300 rounded p-2 ml-2"
+            />
+          )}
+        </div>
       </div>
 
       {/* ★ 出題順序の選択 */}
