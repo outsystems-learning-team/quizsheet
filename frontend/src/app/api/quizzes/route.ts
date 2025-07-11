@@ -7,6 +7,8 @@ export async function GET(request: Request) {
   const categories = searchParams.get('categories'); // categoriesはカンマ区切り文字列を想定
   const limit = searchParams.get('limit'); // limitは問題数の上限を想定
 
+  console.log('Received categories:', categories);
+
   if (!quizName) {
     return new NextResponse('Quiz name is required', { status: 400 });
   }
@@ -16,11 +18,13 @@ export async function GET(request: Request) {
 
   try {
     const categoryArray = categories.split(',');
+    console.log('categoryArray:', categoryArray);
+
     let query = sql`
       SELECT *
       FROM quiz_list
       WHERE quiz_name = ${quizName}
-      AND category IN (${categoryArray})
+      AND category IN (${sql.join(categoryArray, sql`, `)})
       ORDER BY id ASC
     `;
 

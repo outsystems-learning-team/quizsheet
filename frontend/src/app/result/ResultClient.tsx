@@ -13,7 +13,20 @@ import { ResultCard } from "@/components/ResultCard";
  */
 export default function ResultPage() {
   const router = useRouter();
-  const { answeredCount, correctCount, streak, categoryStats } = useContext(QuizContext);
+  const { answeredCount, correctCount, streak, categoryStats, incorrectQuestions, setQuestions, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
+
+  const handleRetrySelected = (questionIds: number[]) => {
+    const selectedQuestions = incorrectQuestions.filter((q) =>
+      questionIds.includes(q.id)
+    );
+    setQuestions(selectedQuestions);
+    setAnsweredCount(0);
+    setCorrectCount(0);
+    setStreak(0);
+    setCategoryStats({});
+    setIncorrectQuestions([]); // 間違えた問題リストをクリア
+    router.push("/quiz");
+  };
 
   return (
     <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow">
@@ -22,7 +35,9 @@ export default function ResultPage() {
         correct={correctCount}
         streak={streak}
         categoryStats={categoryStats}
+        incorrectQuestions={incorrectQuestions}
         onRestart={() => router.push("/start")}
+        onRetrySelected={handleRetrySelected}
       />
     </div>
   );
