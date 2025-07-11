@@ -1,8 +1,7 @@
-// src/components/QuestionCard.tsx
 "use client";
 
 import type { FC } from "react";
-import {Question} from "../../../shared/types"
+import { Question } from "@shared/types";
 
 export interface QuestionCardProps {
   /** 表示する問題オブジェクト */
@@ -16,10 +15,10 @@ export interface QuestionCardProps {
 /**
  * 1問分の問題文と選択肢・選択状態を表示するコンポーネント
  *
- * @param props.question 表示対象の Question オブジェクト
- * @param props.selected 現在選択されているインデックス
- * @param props.onSelect 選択時に呼び出される関数
- * @returns JSX.Element
+ * @param {Question} props.question - 表示対象の Question オブジェクト
+ * @param {number | null} props.selected - 現在選択されているインデックス
+ * @param {(idx: number) => void} props.onSelect - 選択時に呼び出される関数
+ * @returns {JSX.Element} 問題カードの UI 要素
  */
 export const QuestionCard: FC<QuestionCardProps> = ({
   question,

@@ -1,10 +1,11 @@
-// app/result/page.tsx
 import { Suspense } from "react";
 import ResultClient from "./ResultClient";
 
-// 静的プリレンダーをオフに
-export const dynamic = "force-dynamic";
-
+/**
+ * 結果ページコンポーネント
+ * ResultClient を Suspense でラップして表示します。
+ * @returns {JSX.Element} 結果ページの UI 要素
+ */
 export default function ResultPage() {
   return (
     <Suspense fallback={<p>Loading…</p>}>
