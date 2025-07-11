@@ -20,7 +20,7 @@ import { LoadingOverlay } from "../../components/LoadingOverlay";
 export default function QuizClient(): JSX.Element {
   const router = useRouter();
 
-  const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
+  const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats } = useContext(QuizContext);
 
   const totalToAnswer = questions.length;
 
@@ -59,7 +59,6 @@ export default function QuizClient(): JSX.Element {
       });
     } else {
       setStreak(0);
-      setIncorrectQuestions((prev) => [...prev, current]);
     }
     setCategoryStats((prev) => {
       const cat = current.category;
