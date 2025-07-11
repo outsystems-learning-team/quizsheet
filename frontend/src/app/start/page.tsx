@@ -29,6 +29,7 @@ export default function StartPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [activeSheet, setActiveSheet] = useState<string>("");
+  const [questionOrder, setQuestionOrder] = useState("random"); // ★ 出題順序の状態
   const { setQuestions, isLoading, setIsLoading } = useContext(QuizContext);
 
   /* ----------------------------  fetch once  --------------------------- */
@@ -72,10 +73,13 @@ export default function StartPage() {
         return;
       }
 
-      /* --- シャッフル (F-Y) & 切り詰め --- */
-      const finalQs: Question[] = questions
-        .sort(() => Math.random() - 0.5)
-        .slice(0, numQuestions);
+      /* --- シャッフル & 切り詰め --- */
+      const processedQuestions =
+        questionOrder === "random"
+          ? [...questions].sort(() => Math.random() - 0.5)
+          : questions;
+
+      const finalQs: Question[] = processedQuestions.slice(0, numQuestions);
 
       setQuestions(finalQs);
       router.push(`/quiz?count=${finalQs.length}`);
@@ -93,10 +97,10 @@ export default function StartPage() {
 
     setIsLoading(true);
     try {
-      const catList = await fetchQuizApi<CategoryNameList[]>({
+      const catList = await fetchQuizApi<CategoryNameList[]>(({
         key: "category_list",
         targetSheet: sheetName,
-      });
+      }));
       setCategories(catList);
     } catch (e) {
       setError(
@@ -209,6 +213,35 @@ export default function StartPage() {
           onChange={(e) => setNumQuestions(Number(e.target.value))}
           className="w-full border border-gray-300 rounded p-2"
         />
+      </div>
+
+      {/* ★ 出題順序の選択 */}
+      <div className="mb-6">
+        <label className="block mb-2">出題順</label>
+        <div className="flex items-center gap-x-4">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="order"
+              value="random"
+              checked={questionOrder === "random"}
+              onChange={(e) => setQuestionOrder(e.target.value)}
+              className="w-4 h-4"
+            />
+            <span className="ml-2">ランダム</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="order"
+              value="in_order"
+              checked={questionOrder === "in_order"}
+              onChange={(e) => setQuestionOrder(e.target.value)}
+              className="w-4 h-4"
+            />
+            <span className="ml-2">順番通り</span>
+          </label>
+        </div>
       </div>
 
       <button
