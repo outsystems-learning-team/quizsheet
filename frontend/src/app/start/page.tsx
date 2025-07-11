@@ -3,16 +3,33 @@
 import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type {
-  CategoryNameList,
-  InitData,
-  Question,
-  QuestionsResponse,
-  SheetNameList,
-} from "@shared/types";
 import { QuizContext } from "@/context/QuizContext";
-import { fetchQuizApi } from "../../lib/api";
 import { LoadingOverlay } from "../../components/LoadingOverlay";
+
+// 型定義を修正
+interface QuizName {
+  id: number;
+  quiz_name: string;
+  quiz_name_jp: string;
+}
+
+interface Category {
+  id: number; // idを追加
+  category_name: string;
+}
+
+interface Question {
+  id: number;
+  quiz_name: string;
+  category: string;
+  question: string;
+  choice1: string;
+  choice2: string;
+  choice3: string;
+  choice4: string;
+  answer: string;
+  explanation: string;
+}
 
 /**
  * スタートページコンポーネント
@@ -24,11 +41,11 @@ export default function StartPage() {
 
   /* ------------------------------  state  ------------------------------ */
   const [numQuestions, setNumQuestions] = useState(20);
-  const [sheets, setSheets] = useState<SheetNameList[]>([]);
-  const [categories, setCategories] = useState<CategoryNameList[]>([]);
+  const [quizNames, setQuizNames] = useState<QuizName[]>([]); // sheets -> quizNames
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [activeSheet, setActiveSheet] = useState<string>("");
+  const [activeQuizName, setActiveQuizName] = useState<string>(""); // activeSheet -> activeQuizName
   const [questionOrder, setQuestionOrder] = useState("random"); // ★ 出題順序の状態
   const { setQuestions, isLoading, setIsLoading } = useContext(QuizContext);
 
@@ -37,15 +54,19 @@ export default function StartPage() {
     (async () => {
       setIsLoading(true);
       try {
-        const init = await fetchQuizApi<InitData>({
-          key: "sheet_name_list",
-        });
+        // クイズ名リストの取得
+        const quizNamesRes = await fetch('/api/quiz-names');
+        if (!quizNamesRes.ok) throw new Error(`Failed to fetch quiz names: ${quizNamesRes.statusText}`);
+        const quizNamesData: QuizName[] = await quizNamesRes.json();
+        setQuizNames(quizNamesData);
 
-        setSheets(init.sheetNameList);
-        setCategories(init.categoryNameList);
-
-        if (init.sheetNameList.length) {
-          setActiveSheet(init.sheetNameList[0].sheetName);
+        if (quizNamesData.length > 0) {
+          setActiveQuizName(quizNamesData[0].quiz_name);
+          // カテゴリリストの取得
+          const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(quizNamesData[0].quiz_name)}`);
+          if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
+          const categoriesData: Category[] = await categoriesRes.json();
+          setCategories(categoriesData);
         }
 
         setError(null);
@@ -60,13 +81,27 @@ export default function StartPage() {
   /* ---------------------------  form submit  --------------------------- */
   const handleStart = async () => {
     setIsLoading(true);
+    setError(null); // Clear previous errors
     try {
-      const { questions }: QuestionsResponse =
-        await fetchQuizApi<QuestionsResponse>({
-          key: "select_quiz",
-          targetSheet: activeSheet,
-          category: selectedCategories,
-        });
+      if (selectedCategories.length === 0) {
+        setError("カテゴリが選択されていません。");
+        setIsLoading(false);
+        return;
+      }
+
+      // クイズデータの取得
+      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}`);
+
+      if (!quizzesRes.ok) {
+        const errorText = await quizzesRes.text(); // Read response body as text for more info
+        throw new Error(`Failed to fetch quizzes: ${quizzesRes.status} ${quizzesRes.statusText} - ${errorText}`);
+      }
+
+      const questions: Question[] = await quizzesRes.json();
+
+      if (!Array.isArray(questions)) { // Explicitly check if it's an array
+        throw new Error("API response is not an array of questions.");
+      }
 
       if (questions.length === 0) {
         setError("選択条件に合う問題がありません");
@@ -84,24 +119,25 @@ export default function StartPage() {
       setQuestions(finalQs);
       router.push(`/quiz?count=${finalQs.length}`);
     } catch (e) {
+      console.error("Error in handleStart:", e); // Log the full error
       setError(e instanceof Error ? e.message : "取得失敗");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSheetChange = async (e: ChangeEvent<HTMLSelectElement>) => {
-    const sheetName = e.target.value;
-    setActiveSheet(sheetName);
+  const handleQuizNameChange = async (e: ChangeEvent<HTMLSelectElement>) => {
+    const quizName = e.target.value;
+    setActiveQuizName(quizName);
     setSelectedCategories([]);
 
+    // カテゴリリストの再取得
     setIsLoading(true);
     try {
-      const catList = await fetchQuizApi<CategoryNameList[]>(({
-        key: "category_list",
-        targetSheet: sheetName,
-      }));
-      setCategories(catList);
+      const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(quizName)}`);
+      if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
+      const categoriesData: Category[] = await categoriesRes.json();
+      setCategories(categoriesData);
     } catch (e) {
       setError(
         `カテゴリ取得に失敗しました: ${e instanceof Error ? e.message : "不明なエラー"}`,
@@ -121,7 +157,7 @@ export default function StartPage() {
 
   /** 全て選択 */
   const handleSelectAll = () => {
-    setSelectedCategories(categories.map((c) => c.categoryName));
+    setSelectedCategories(categories.map((c) => c.category_name));
   };
 
   /** 全て解除 */
@@ -146,12 +182,12 @@ export default function StartPage() {
           <label className="block mb-1">対象問題</label>
           <select
             className="w-full border rounded p-2"
-            value={activeSheet}
-            onChange={handleSheetChange}
+            value={activeQuizName}
+            onChange={handleQuizNameChange}
           >
-            {sheets.map((s) => (
-              <option key={s.id} value={String(s.sheetName)}>
-                {s.text}
+            {quizNames.map((s) => (
+              <option key={s.id} value={String(s.quiz_name)}>
+                {s.quiz_name_jp}
               </option>
             ))}
           </select>
@@ -180,19 +216,19 @@ export default function StartPage() {
 
           <div className="grid gap-2 mb-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {categories.map((cat) => (
-              <label key={cat.id} className="flex items-center space-x-2">
+              <label key={cat.category_name} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  value={cat.categoryName}
-                  checked={selectedCategories.includes(cat.categoryName)}
+                  value={cat.category_name}
+                  checked={selectedCategories.includes(cat.category_name)}
                   onChange={handleCategoryToggle}
                   className="w-4 h-4 shrink-0"
                 />
                 <span
                   className="truncate whitespace-nowrap overflow-hidden w-full"
-                  title={cat.categoryName}
+                  title={cat.category_name}
                 >
-                  {cat.categoryName}
+                  {cat.category_name}
                 </span>
               </label>
             ))}
