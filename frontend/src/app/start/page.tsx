@@ -43,15 +43,12 @@ export default function StartPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [activeQuizName, setActiveQuizName] = useState<string>(""); // activeSheet -> activeQuizName
   const [questionOrder, setQuestionOrder] = useState("random"); // ★ 出題順序の状態
-  const { setQuestions, isLoading, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats } = useContext(QuizContext);
+  const { setQuestions, isLoading, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
     // コンポーネントがマウントされたときに結果関連のstateをリセット
-    setAnsweredCount(0);
-    setCorrectCount(0);
-    setStreak(0);
-    setCategoryStats({});
+    resetQuizState();
 
     (async () => {
       setIsLoading(true);
@@ -78,7 +75,7 @@ export default function StartPage() {
         setIsLoading(false);
       }
     })();
-  }, [setIsLoading]);
+  }, [setIsLoading, resetQuizState, setQuizNames, setCategories, setError]);
 
   /* ---------------------------  form submit  --------------------------- */
   const handleStart = useCallback(async () => {

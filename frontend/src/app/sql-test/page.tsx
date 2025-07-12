@@ -61,6 +61,14 @@ export default function SqlTestPage() {
             Fetch Quizzes by Category
           </button>
         </div>
+        <div>
+          <button
+            onClick={() => fetchData('/api/users')}
+            className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Fetch Users
+          </button>
+        </div>
       </div>
 
       {loading && <p className="mt-4">Loading...</p>}
