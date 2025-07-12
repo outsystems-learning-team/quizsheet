@@ -1,6 +1,8 @@
 import type { JSX, ReactNode } from "react";
 
 import { QuizProvider } from "../context/QuizContext";
+import AuthSessionProvider from "./AuthSessionProvider";
+import Header from "@/components/Header";
 
 import "./globals.css";
 
@@ -26,10 +28,13 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-gray-50">
-        <div className="container mx-auto p-4">
-          <QuizProvider>{children}</QuizProvider>
-        </div>
+      <body className="min-h-screen bg-primary-bg">
+        <AuthSessionProvider>
+          <Header />
+          <main className="container mx-auto p-4">
+            <QuizProvider>{children}</QuizProvider>
+          </main>
+        </AuthSessionProvider>
       </body>
     </html>
   );
