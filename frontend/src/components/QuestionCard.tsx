@@ -43,10 +43,12 @@ export const QuestionCard: FC<QuestionCardProps> = ({
             "block w-full text-left px-4 py-2 rounded-lg cursor-pointer ";
           if (selected !== null) {
             // 回答済み：正誤によってスタイルを変更
-            if (isCorrect) {
+            if (isSelected && isCorrect) {
               base += "bg-green-100 border border-green-500 text-green-800";
-            } else if (isSelected) {
+            } else if (isSelected && !isCorrect) {
               base += "bg-red-100 border border-red-500 text-red-800";
+            } else if (!isSelected && isCorrect) {
+              base += "bg-green-100 border border-green-500 text-green-800";
             } else {
               base += "bg-primary-bg border border-transparent";
             }
