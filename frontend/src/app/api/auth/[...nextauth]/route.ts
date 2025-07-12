@@ -1,11 +1,11 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import { accounts, sessions, users, verificationTokens } from "@/lib/schema";
-import type { Account, Profile, User } from "next-auth"; // User, Account, Profile をインポート
+import type { Account, Profile, User, Session } from "next-auth"; // Session をインポート
 
-const authOptions = {
+const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -21,6 +21,12 @@ const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+    async session({ session, user }: { session: Session; user: User }) {
+      if (session.user) {
+        session.user.id = user.id;
+      }
+      return session;
+    },
     async signIn({ user, account, profile, email, credentials }: { user: User; account: Account | null; profile?: Profile; email?: { verificationRequest?: boolean }; credentials?: Record<string, any> /* eslint-disable-line @typescript-eslint/no-explicit-any */ }) {
       console.log("Sign In Callback:");
       console.log("User:", user);

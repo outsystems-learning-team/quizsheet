@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, timestamp, integer, primaryKey, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, timestamp, integer, primaryKey, uuid, boolean } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from '@auth/core/adapters';
 
 export const quiz_list = pgTable('quiz_list', {
@@ -66,3 +66,13 @@ export const verificationTokens = pgTable('verificationTokens', {
 }, (vt) => ({
   compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
 }));
+
+export const user_quiz_attempts = pgTable('user_quiz_attempts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  quizQuestionId: integer('quiz_question_id').notNull().references(() => quiz_list.id),
+  isCorrect: boolean('is_correct').notNull(),
+  timeTakenSeconds: integer('time_taken_seconds'),
+  userAnswer: text('user_answer'),
+  attemptedAt: timestamp('attempted_at', { withTimezone: true }).defaultNow().notNull(),
+});
