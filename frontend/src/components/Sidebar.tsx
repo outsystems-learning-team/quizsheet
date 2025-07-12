@@ -52,6 +52,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Link>
             </li>
             <li className="mb-4">
+              <Link href="/progress" className="text-lg hover:text-blue-600" onClick={onClose}>
+                学習進捗
+              </Link>
+            </li>
+            <li className="mb-4">
               <Link href="/settings" className="text-lg hover:text-blue-600" onClick={onClose}>
                 設定
               </Link>
