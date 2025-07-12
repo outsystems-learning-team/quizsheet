@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { quiz_list } from '@/lib/schema';
-import { sql, distinct } from 'drizzle-orm';
+import { eq } from 'drizzle-orm'; // eq をインポート
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const quizName = searchParams.get('quiz_name');
 
-    let categoriesQuery = db.select({ category: quiz_list.category }).from(quiz_list);
-
-    if (quizName) {
-      categoriesQuery = categoriesQuery.where(sql`${quiz_list.quiz_name} = ${quizName}`);
-    }
-
-    const categories = await categoriesQuery.groupBy(quiz_list.category);
+    const categories = await db.selectDistinct({ category: quiz_list.category })
+      .from(quiz_list)
+      .where(quizName ? eq(quiz_list.quiz_name, quizName) : undefined)
+      .groupBy(quiz_list.category);
 
     // 各カテゴリに対してダミーの正答率を生成
     const categoryAccuracy = categories.map((item) => {

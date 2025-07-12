@@ -32,8 +32,8 @@ export default function CategoryAccuracyHeatmap() {
         if (result.length > 0) {
           setSelectedQuizName(result[0].quiz_name); // 最初の問題集をデフォルトで選択
         }
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Unknown error");
       }
     }
     fetchQuizNames();
@@ -52,8 +52,8 @@ export default function CategoryAccuracyHeatmap() {
         }
         const result: CategoryAccuracy[] = await response.json();
         setData(result);
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -81,9 +81,9 @@ export default function CategoryAccuracyHeatmap() {
         setSelectedQuizName(''); // 一度空にしてから元に戻すことで useEffect を強制的に再実行
         setTimeout(() => setSelectedQuizName(quizNames[0]?.quiz_name || ''), 0);
         alert('正答率データがリセットされました。');
-      } catch (e: any) {
-        setError(e.message);
-        alert(`リセットに失敗しました: ${e.message}`);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Unknown error");
+        alert(`リセットに失敗しました: ${e instanceof Error ? e.message : "不明なエラー"}`);
       } finally {
         setLoading(false);
       }

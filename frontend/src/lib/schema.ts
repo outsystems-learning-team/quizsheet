@@ -1,5 +1,4 @@
-import { pgTable, serial, text, varchar, timestamp, integer, primaryKey, uuid } from 'drizzle-orm/pg-core';
-import type { AdapterAccount } from '@auth/core/adapters';
+import { pgTable, text, varchar, timestamp, integer, primaryKey, uuid } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from '@auth/core/adapters';
 
 export const quiz_list = pgTable('quiz_list', {

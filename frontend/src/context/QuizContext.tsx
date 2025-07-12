@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, JSX, Dispatch, SetStateAction } from "react";
-import { createContext, useState } from "react";
+import { createContext, useState, useCallback } from "react";
 
 import { Question } from "@shared/types";
 
@@ -78,7 +78,7 @@ export function QuizProvider({
   const [incorrectQuestions, setIncorrectQuestions] = useState<Question[]>([]);
 
   // クイズの状態をリセットする関数
-  const resetQuizState = () => {
+  const resetQuizState = useCallback(() => {
     setQuestions([]);
     setIsLoading(false);
     setAnsweredCount(0);
@@ -86,7 +86,7 @@ export function QuizProvider({
     setStreak(0);
     setCategoryStats({});
     setIncorrectQuestions([]);
-  };
+  }, [setQuestions, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions]);
 
   return (
     <QuizContext.Provider value={{
