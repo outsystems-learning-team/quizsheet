@@ -28,6 +28,7 @@ export type QuizContextValue = {
   >;
   incorrectQuestions: Question[];
   setIncorrectQuestions: Dispatch<SetStateAction<Question[]>>;
+  resetQuizState: () => void; // 追加
 };
 
 /**
@@ -51,6 +52,7 @@ export const QuizContext = createContext<QuizContextValue>({
   setCategoryStats: () => {},
   incorrectQuestions: [],
   setIncorrectQuestions: () => {},
+  resetQuizState: () => {}, // 追加
 });
 
 /**
@@ -75,6 +77,17 @@ export function QuizProvider({
   const [categoryStats, setCategoryStats] = useState<Record<string, { total: number; correct: number }>>({});
   const [incorrectQuestions, setIncorrectQuestions] = useState<Question[]>([]);
 
+  // クイズの状態をリセットする関数
+  const resetQuizState = () => {
+    setQuestions([]);
+    setIsLoading(false);
+    setAnsweredCount(0);
+    setCorrectCount(0);
+    setStreak(0);
+    setCategoryStats({});
+    setIncorrectQuestions([]);
+  };
+
   return (
     <QuizContext.Provider value={{
       questions,
@@ -91,6 +104,7 @@ export function QuizProvider({
       setCategoryStats,
       incorrectQuestions,
       setIncorrectQuestions,
+      resetQuizState, // 追加
     }}>
       {children}
     </QuizContext.Provider>
