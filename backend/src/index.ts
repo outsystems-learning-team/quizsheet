@@ -10,6 +10,7 @@ import {
 } from "@shared/constants";
 import type { Question, QuestionsRequest, QuestionsResponse } from "@shared/types";
 
+import { addQuiz } from "./addQuiz";
 import { getCategoryNameList } from "./getCategoryNameList";
 import { getInitData } from "./getInitData";
 import { getSelectQuizList } from "./getSelectQuizList";
@@ -70,6 +71,10 @@ export function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Cont
       if (!body.targetSheet) return error("targetSheet is required");
       if (!body.category?.length) return error("category is required");
       return getSelectQuizList(body.targetSheet, body.category);
+
+    case "add_quiz":
+      // Assuming the body is the quiz data
+      return addQuiz(body as any); // You might want to add proper type checking here
 
     default:
       return error("Invalid key");
