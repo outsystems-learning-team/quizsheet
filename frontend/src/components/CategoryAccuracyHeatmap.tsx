@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react'; // useSessionをインポート
 
 interface CategoryAccuracy {
   category: string;
@@ -14,6 +15,7 @@ interface QuizName {
 }
 
 export default function CategoryAccuracyHeatmap() {
+  const { data: session } = useSession(); // session情報を取得
   const [data, setData] = useState<CategoryAccuracy[]>([]);
   const [quizNames, setQuizNames] = useState<QuizName[]>([]);
   const [selectedQuizName, setSelectedQuizName] = useState<string>('');
@@ -30,7 +32,7 @@ export default function CategoryAccuracyHeatmap() {
         const result: QuizName[] = await response.json();
         setQuizNames(result);
         if (result.length > 0) {
-          setSelectedQuizName(result[0].quiz_name); // 最初の問題集をデフォルトで選択
+          setSelectedQuizName(result[0].quiz_name);
         }
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : "Unknown error");
@@ -41,13 +43,20 @@ export default function CategoryAccuracyHeatmap() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!selectedQuizName) return; // 問題集が選択されていない場合は何もしない
+      // ログインしていない、または問題集が選択されていない場合は処理を中断
+      if (!session || !selectedQuizName) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       setError(null);
       try {
         const response = await fetch(`/api/user-progress/category-accuracy?quiz_name=${encodeURIComponent(selectedQuizName)}`);
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('ログインが必要です。');
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result: CategoryAccuracy[] = await response.json();
@@ -59,7 +68,7 @@ export default function CategoryAccuracyHeatmap() {
       }
     }
     fetchData();
-  }, [selectedQuizName]); // 選択された問題集名が変更されたらデータを再フェッチ
+  }, [selectedQuizName, session]); // sessionを依存配列に追加
 
   const getColor = (accuracy: number) => {
     const hue = accuracy * 120;
@@ -90,6 +99,16 @@ export default function CategoryAccuracyHeatmap() {
     }
   };
 
+  // ログインしていない場合の表示
+  if (!session) {
+    return (
+      <div className="p-4 bg-white rounded-lg shadow-md text-center">
+        <h2 className="text-xl font-semibold mb-4">カテゴリ別正答率ヒートマップ</h2>
+        <p>学習進捗を確認するには、ログインしてください。</p>
+      </div>
+    );
+  }
+  
   if (error) return <div className="text-center py-4 text-red-500">Error: {error}</div>;
 
   return (
@@ -125,7 +144,7 @@ export default function CategoryAccuracyHeatmap() {
       {loading ? (
         <div className="text-center py-4">Loading heatmap data...</div>
       ) : data.length === 0 ? (
-        <div className="text-center py-4">No category data available for this quiz.</div>
+        <div className="text-center py-4">この問題集の回答履歴がまだありません。</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {data.map((item) => (
