@@ -78,7 +78,7 @@ export default function StartPage() {
         .slice(0, numQuestions);
 
       setQuestions(finalQs);
-      router.push(`/quiz?count=${finalQs.length}`);
+      router.push('/quiz?count=${finalQs.length}');
     } catch (e) {
       setError(e instanceof Error ? e.message : "取得失敗");
     } finally {
@@ -89,27 +89,32 @@ export default function StartPage() {
   const handleSelectQuestion = async () => {
     setIsLoading(true);
     try {
+      // 1. カテゴリ一覧を取得
+      const allCategories = await fetchQuizApi<CategoryNameList[]>({
+        key: "category_list",
+        targetSheet: activeSheet,
+      });
+
+      const categoryNames = allCategories.map((cat) => cat.categoryName);
+
+      // 2. 問題を一括取得（全カテゴリ指定）
       const { questions }: QuestionsResponse =
         await fetchQuizApi<QuestionsResponse>({
           key: "select_quiz",
           targetSheet: activeSheet,
-          category: selectedCategories,
+          category: categoryNames,
         });
 
       if (questions.length === 0) {
-        setError("選択条件に合う問題がありません");
+        setError("このシートには問題がありません。");
         return;
       }
 
-      /* --- シャッフル (F-Y) & 切り詰め --- */
-      const finalQs: Question[] = questions
-        .sort(() => Math.random() - 0.5)
-        .slice(0, numQuestions);
-
-      setQuestions(finalQs);
+      // 3. クイズ用に保存し、ページ遷移
+      setQuestions(questions);
       router.push("/select");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "取得失敗");
+      setError(e instanceof Error ? e.message : "取得に失敗しました");
     } finally {
       setIsLoading(false);
     }
@@ -239,7 +244,7 @@ export default function StartPage() {
           className="w-full border border-gray-300 rounded p-2"
         />
       </div>
-      
+
       <div className="flex flex-col sm:flex-row gap-4">
         <button
           type="button"
@@ -253,13 +258,12 @@ export default function StartPage() {
           type="button"
           className="w-full sm:w-1/2 py-3 rounded-lg text-[#fa173d] border border-[#fa173d] hover:bg-[#fa173d]/10"
           disabled={isLoading || !!error}
-          onClick={handleStart}
+          onClick={handleSelectQuestion}
         >
           問題選択
         </button>
       </div>
-      
-      
+
       {isLoading && <LoadingOverlay />}
     </form>
   );
