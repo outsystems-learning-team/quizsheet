@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react'; // useSessionをインポート
 
 interface CategoryAccuracy {
@@ -41,34 +41,41 @@ export default function CategoryAccuracyHeatmap() {
     fetchQuizNames();
   }, []);
 
-  useEffect(() => {
-    async function fetchData() {
-      // ログインしていない、または問題集が選択されていない場合は処理を中断
-      if (!session || !selectedQuizName) {
-        setLoading(false);
-        return;
-      }
+  const fetchData = useCallback(async () => {
+    console.log('fetchData called');
+    console.log('session?.user?.id:', session?.user?.id);
+    console.log('selectedQuizName:', selectedQuizName);
 
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/api/user-progress/category-accuracy?quiz_name=${encodeURIComponent(selectedQuizName)}`);
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('ログインが必要です。');
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result: CategoryAccuracy[] = await response.json();
-        setData(result);
-      } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
+    if (!session?.user?.id || !selectedQuizName) {
+      console.log('fetchData: Guard clause hit, returning.');
+      setLoading(false);
+      return;
     }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/user-progress/category-accuracy?quiz_name=${encodeURIComponent(selectedQuizName)}`);
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('ログインが必要です。');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result: CategoryAccuracy[] = await response.json();
+      console.log('API response for heatmap:', result);
+      setData(result);
+    } catch (e: unknown) {
+      console.error('Error in fetchData:', e);
+      setError(e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedQuizName, session?.user?.id]);
+
+  useEffect(() => {
     fetchData();
-  }, [selectedQuizName, session]); // sessionを依存配列に追加
+  }, [fetchData]);
 
   const getColor = (accuracy: number) => {
     const hue = accuracy * 120;
@@ -85,11 +92,10 @@ export default function CategoryAccuracyHeatmap() {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        // リセット後、データを再フェッチして表示を更新
-        // selectedQuizName が変更されたとみなして useEffect をトリガー
-        setSelectedQuizName(''); // 一度空にしてから元に戻すことで useEffect を強制的に再実行
-        setTimeout(() => setSelectedQuizName(quizNames[0]?.quiz_name || ''), 0);
         alert('正答率データがリセットされました。');
+        console.log('Calling fetchData after reset...');
+        await fetchData();
+        console.log('fetchData call completed after reset.');
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : "Unknown error");
         alert(`リセットに失敗しました: ${e instanceof Error ? e.message : "不明なエラー"}`);
