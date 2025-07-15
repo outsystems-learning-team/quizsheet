@@ -57,15 +57,19 @@ export async function GET(request: Request) {
         // answer が数値の場合、それを直接インデックスとして使用 (1始まりを想定し、0始まりに変換)
         answerIndex = row.answer - 1;
       } else if (typeof row.answer === 'string') {
-        // answer が文字列の場合、文字列比較でインデックスを探す
-        answerIndex = choices.findIndex(
-          (choice) =>
-            typeof choice === 'string' &&
-            typeof row.answer === 'string' && choice.trim().toLowerCase() === row.answer.trim().toLowerCase()
-        );
+        // answer が文字列の場合、数値に変換してインデックスを探す
+        const parsedAnswer = parseInt(row.answer, 10);
+        if (!isNaN(parsedAnswer)) {
+          answerIndex = parsedAnswer - 1;
+        } else {
+          // 数値に変換できない場合は、不正な値として -1 を設定
+          answerIndex = -1;
+        }
+        console.log(`Quiz ID: ${row.id}, Answer (DB): '${row.answer}', Choices: [${choices.map(c => `'${c}'`).join(', ')}], Calculated answerIndex: ${answerIndex}`);
       } else {
         // その他の型の場合は -1 (不正な値)
         answerIndex = -1;
+        console.log(`Quiz ID: ${row.id}, Answer (DB): '${row.answer}', Choices: [${choices.map(c => `'${c}'`).join(', ')}], Calculated answerIndex: ${answerIndex} (Invalid type)`);
       }
 
       
