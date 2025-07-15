@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,19 +13,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -33,32 +36,38 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       {/* オーバーレイ */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose}></div>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={onClose}
+        ></div>
       )}
 
       {/* サイドバー本体 */}
       <div
         ref={sidebarRef}
         className={`fixed top-0 left-0 h-full bg-primary-bg shadow-lg transform transition-transform duration-300 ease-in-out z-50
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
           w-64 p-4`} // サイドバーの幅とパディング
       >
         <h2 className="text-2xl font-bold mb-6">メニュー</h2>
         <nav>
           <ul>
             <li className="mb-4">
-              <Link href="/dashboard" className="text-lg hover:text-blue-600" onClick={onClose}>
-                ダッシュボード
+              <Link
+                href="/"
+                className="text-lg hover:text-blue-600"
+                onClick={onClose}
+              >
+                出題設定
               </Link>
             </li>
             <li className="mb-4">
-              <Link href="/progress" className="text-lg hover:text-blue-600" onClick={onClose}>
+              <Link
+                href="/progress"
+                className="text-lg hover:text-blue-600"
+                onClick={onClose}
+              >
                 学習進捗
-              </Link>
-            </li>
-            <li className="mb-4">
-              <Link href="/settings" className="text-lg hover:text-blue-600" onClick={onClose}>
-                設定
               </Link>
             </li>
             {/* 今後、ログインユーザー向けの機能を追加 */}
