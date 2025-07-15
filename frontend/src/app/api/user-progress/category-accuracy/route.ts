@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db, sql } from '@/lib/db';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from '@/lib/auth'; 
+import { authOptions } from '@/lib/auth';
+import { category_list } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -18,7 +20,15 @@ export async function GET(request: Request) {
       return new NextResponse('Quiz name is required', { status: 400 });
     }
 
-    const query = sql`
+    // 1. 対象のクイズの全カテゴリを取得
+    const allCategoriesQuery = db
+      .select({ category: category_list.category_name })
+      .from(category_list)
+      .where(eq(category_list.quiz_name, quizName))
+      .orderBy(category_list.id);
+
+    // 2. ユーザーの回答履歴を取得
+    const userAttemptsQuery = db.execute(sql`
       SELECT
         ql.category,
         COUNT(uqa.id) AS total_attempts,
@@ -31,27 +41,40 @@ export async function GET(request: Request) {
         uqa.user_id = ${userId} AND ql.quiz_name = ${quizName}
       GROUP BY
         ql.category;
-    `;
+    `);
 
-    const result = await db.execute(query);
-    
-    type ResultRow = {
+    // 2つのクエリを並行して実行
+    const [allCategoriesResult, userAttemptsResult] = await Promise.all([
+      allCategoriesQuery,
+      userAttemptsQuery
+    ]);
+
+    // 3. 回答履歴をMapに変換して高速にアクセスできるようにする
+    type UserAttemptRow = {
       category: string;
       total_attempts: string | number;
       correct_attempts: string | number;
     };
 
-    const categoryAccuracy = (result.rows as ResultRow[]).map((row: ResultRow) => {
-      const totalAttempts = Number(row.total_attempts);
-      const correctAttempts = Number(row.correct_attempts);
-      const accuracy = totalAttempts > 0 ? correctAttempts / totalAttempts : 0;
+    const attemptsMap = new Map<string, { total: number; correct: number }>();
+    (userAttemptsResult.rows as UserAttemptRow[]).forEach((row) => {
+      attemptsMap.set(row.category, {
+        total: Number(row.total_attempts),
+        correct: Number(row.correct_attempts),
+      });
+    });
+
+    // 4. 全カテゴリをループし、回答履歴とマージして最終的なデータを作成
+    const finalCategoryAccuracy = allCategoriesResult.map((cat) => {
+      const stats = attemptsMap.get(cat.category!);
+      const accuracy = (stats && stats.total > 0) ? stats.correct / stats.total : 0;
       return {
-        category: row.category,
+        category: cat.category,
         accuracy: parseFloat(accuracy.toFixed(2)),
       };
     });
 
-    return NextResponse.json(categoryAccuracy);
+    return NextResponse.json(finalCategoryAccuracy);
   } catch (error) {
     console.error('Error fetching category accuracy:', error);
     return NextResponse.json({ error: 'Failed to fetch category accuracy' }, { status: 500 });
