@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
-import type { Question } from "@/types/quiz";
+import type { Question } from "@shared/types";
 
 interface QuizName {
   id: number;
@@ -20,7 +20,8 @@ export default function AddQuizPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showTopBtn, setShowTopBtn] = useState(false);
 
   const [quizNames, setQuizNames] = useState<QuizName[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -28,6 +29,7 @@ export default function AddQuizPage() {
   
   const [quizzes, setQuizzes] = useState<Question[]>([]);
   const [editingQuizId, setEditingQuizId] = useState<number | null>(null);
+  const [filterCategory, setFilterCategory] = useState('');
 
   const [quiz, setQuiz] = useState({
     question: "",
@@ -61,33 +63,53 @@ export default function AddQuizPage() {
 
   // Fetch categories and quizzes when targetSheet changes
   useEffect(() => {
-    if (!targetSheet) return;
-
-    const fetchCategoriesAndQuizzes = async () => {
+    const fetchResources = async () => {
       setIsLoading(true);
-      try {
-        // Fetch categories
-        const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(targetSheet)}`);
-        if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
-        const categoriesData: Category[] = await categoriesRes.json();
-        setCategories(categoriesData);
-        setQuiz(prev => ({ ...prev, category: '' }));
+      setError(null);
+      setFilterCategory(''); // Reset category filter on change
 
-        // Fetch quizzes
-        const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(targetSheet)}&categories=${categoriesData.map(c => c.category_name).join(',')}`);
+      try {
+        // Fetch quizzes based on the selected targetSheet
+        const quizQuery = targetSheet ? `quiz_name=${encodeURIComponent(targetSheet)}` : '';
+        const quizzesRes = await fetch(`/api/quizzes?${quizQuery}`);
         if (!quizzesRes.ok) throw new Error(`Failed to fetch quizzes: ${quizzesRes.statusText}`);
         const quizzesData: Question[] = await quizzesRes.json();
         setQuizzes(quizzesData);
 
+        // Fetch categories only if a targetSheet is selected
+        if (targetSheet) {
+          const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(targetSheet)}`);
+          if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
+          const categoriesData: Category[] = await categoriesRes.json();
+          setCategories(categoriesData);
+        } else {
+          setCategories([]); // Clear categories if no sheet is selected
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "データの取得に失敗しました。");
+        setQuizzes([]);
+        setCategories([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCategoriesAndQuizzes();
+    fetchResources();
   }, [targetSheet]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowTopBtn(true);
+      } else {
+        setShowTopBtn(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
 
   const handleInputChange = (
@@ -122,6 +144,7 @@ export default function AddQuizPage() {
       category: "",
       newCategory: "",
     });
+    setIsModalOpen(false);
   };
 
   const handleEdit = (targetQuiz: Question) => {
@@ -134,34 +157,18 @@ export default function AddQuizPage() {
       category: targetQuiz.category,
       newCategory: "",
     });
+    setIsModalOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (quizId: number) => {
-    if (!window.confirm("本当にこの問題を削除しますか？")) return;
-
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/quiz/${quizId}`, { method: 'DELETE' });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "削除に失敗しました。");
-      }
-      setQuizzes(prev => prev.filter(q => q.id !== quizId));
-      alert("問題を削除しました。");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "削除中にエラーが発生しました。");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    const finalCategory = quiz.category === 'new' ? quiz.newCategory : quiz.category;
+    const finalCategory = quiz.newCategory.trim() !== '' ? quiz.newCategory : quiz.category;
     const answerIndex = quiz.options.findIndex(opt => opt === quiz.answer);
 
     if (
@@ -182,7 +189,7 @@ export default function AddQuizPage() {
       category: finalCategory,
       question: quiz.question,
       choices: quiz.options.filter(opt => opt.trim() !== ''),
-      answerIndex: answerIndex,
+      answer: quiz.answer,
       explanation: quiz.explanation,
     };
 
@@ -211,6 +218,7 @@ export default function AddQuizPage() {
       
       alert(editingQuizId ? "問題が正常に更新されました！" : "問題が正常に追加されました！");
       resetForm();
+      setIsModalOpen(false);
       // Refresh quiz list
       const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(targetSheet)}&categories=${categories.map(c => c.category_name).join(',')}`);
       const quizzesData = await quizzesRes.json();
@@ -225,201 +233,189 @@ export default function AddQuizPage() {
 
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-primary-bg shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-center">{editingQuizId ? "問題を編集" : "新しい問題を追加"}</h1>
+    <div className="max-w-7xl mx-auto p-8 bg-primary-bg shadow-lg rounded-lg">
+      <h1 className="text-4xl font-bold mb-8 text-center">問題管理ダッシュボード</h1>
 
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setPreview(!preview)}
-          className="px-4 py-2 bg-secondary-bg text-primary-text rounded hover:opacity-80"
+      {/* Top-level Quiz Selection */}
+      <div className="mb-8">
+        <label htmlFor="targetSheet" className="block text-xl font-semibold mb-3">
+          対象クイズの選択
+        </label>
+        <select
+          id="targetSheet"
+          name="targetSheet"
+          value={targetSheet}
+          onChange={(e) => setTargetSheet(e.target.value)}
+          className="w-full p-4 bg-secondary-bg border border-gray-600 rounded-md text-lg"
         >
-          {preview ? "編集に戻る" : "プレビュー"}
+          <option value="">すべてのクイズを表示</option>
+          {quizNames.map((q) => (
+            <option key={q.id} value={q.quiz_name}>
+              {q.quiz_name_jp}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Action Buttons and Filters */}
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => {
+            resetForm();
+            setIsModalOpen(true);
+          }}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg"
+          disabled={!targetSheet} // Disable if no quiz is selected
+        >
+          新しい問題を追加
         </button>
       </div>
 
-      {preview ? (
-        <div className="border p-6 rounded-md bg-secondary-bg">
-          <h2 className="text-xl font-semibold mb-4">{quiz.question}</h2>
-          <div className="space-y-2">
-            {quiz.options.map((option, index) => (
-              <div key={index} className={`p-3 bg-primary-bg rounded ${quiz.answer === option ? 'ring-2 ring-green-500' : ''}`}>
-                {option}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={resetForm}
+        >
+          <div
+            className="bg-secondary-bg p-8 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <h2 className="text-2xl font-bold mb-4">{editingQuizId ? "問題を編集" : "新しい問題を追加"}</h2>
+              {error && <p className="text-red-500 text-center">{error}</p>}
+
+              {/* Form content remains the same... */}
+              <div>
+                <label className="block text-lg font-medium mb-2">選択肢</label>
+                {quiz.options.map((option, index) => (
+                  <div key={index} className="flex items-center mb-2">
+                    <input
+                      type="text"
+                      value={option}
+                      onChange={(e) => handleOptionChange(index, e.target.value)}
+                      className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md"
+                      placeholder={`選択肢 ${index + 1}`}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeOption(index)}
+                      className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      削除
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t">
-            <p><span className="font-bold">正解:</span> {quiz.answer}</p>
-            <p className="mt-2"><span className="font-bold">解説:</span> {quiz.explanation}</p>
-            <p className="mt-2"><span className="font-bold">カテゴリ:</span> {quiz.category === 'new' ? quiz.newCategory : quiz.category}</p>
-          </div>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <p className="text-red-500 text-center">{error}</p>}
 
-          <div>
-            <label htmlFor="targetSheet" className="block text-lg font-medium mb-2">
-              対象クイズ
-            </label>
-            <select
-              id="targetSheet"
-              name="targetSheet"
-              value={targetSheet}
-              onChange={(e) => setTargetSheet(e.target.value)}
-              className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md"
-              required
-            >
-              <option value="">クイズを選択...</option>
-              {quizNames.map((q) => (
-                <option key={q.id} value={q.quiz_name}>
-                  {q.quiz_name_jp}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label htmlFor="answer" className="block text-lg font-medium mb-2">
+                  正解
+                </label>
+                <select
+                  id="answer"
+                  name="answer"
+                  value={quiz.answer}
+                  onChange={handleInputChange}
+                  className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md"
+                  required
+                >
+                  <option value="">正解の選択肢を選択...</option>
+                  {quiz.options.filter(opt => opt).map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label htmlFor="question" className="block text-lg font-medium mb-2">
-              問題文
-            </label>
-            <textarea
-              id="question"
-              name="question"
-              value={quiz.question}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-lg font-medium mb-2">選択肢</label>
-            {quiz.options.map((option, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <input
-                  type="text"
-                  value={option}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
-                  className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md"
-                  placeholder={`選択肢 ${index + 1}`}
+              <div>
+                <label htmlFor="explanation" className="block text-lg font-medium mb-2">
+                  解説
+                </label>
+                <textarea
+                  id="explanation"
+                  name="explanation"
+                  value={quiz.explanation}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => removeOption(index)}
-                  className="ml-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  削除
-                </button>
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={addOption}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              選択肢を追加
-            </button>
-          </div>
 
-          <div>
-            <label htmlFor="answer" className="block text-lg font-medium mb-2">
-              正解
-            </label>
-            <select
-              id="answer"
-              name="answer"
-              value={quiz.answer}
-              onChange={handleInputChange}
-              className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md"
-              required
-            >
-              <option value="">正解の選択肢を選択...</option>
-              {quiz.options.filter(opt => opt).map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label htmlFor="category" className="block text-lg font-medium mb-2">
+                  既存カテゴリを選択
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  value={quiz.category}
+                  onChange={handleInputChange}
+                  className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md"
+                  disabled={!targetSheet}
+                >
+                  <option value="">カテゴリを選択しない</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.category_name}>
+                      {cat.category_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label htmlFor="explanation" className="block text-lg font-medium mb-2">
-              解説
-            </label>
-            <textarea
-              id="explanation"
-              name="explanation"
-              value={quiz.explanation}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="category" className="block text-lg font-medium mb-2">
-              カテゴリ
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={quiz.category}
-              onChange={handleInputChange}
-              className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md"
-              disabled={!targetSheet}
-            >
-              <option value="">カテゴリを選択</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.category_name}>
-                  {cat.category_name}
-                </option>
-              ))}
-              <option value="new">新しいカテゴリを作成</option>
-            </select>
-
-            {quiz.category === "new" && (
-              <input
-                type="text"
-                name="newCategory"
-                value={quiz.newCategory}
-                onChange={handleInputChange}
-                className="w-full mt-2 p-3 bg-secondary-bg border border-gray-600 rounded-md"
-                placeholder="新しいカテゴリ名"
-                required
-              />
-            )}
-          </div>
-
-          <div className="flex items-center justify-center space-x-4">
-            <button
-              type="submit"
-              className="w-full max-w-xs py-3 px-6 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
-              disabled={isLoading}
-            >
-              {editingQuizId ? "問題を更新する" : "問題を追加する"}
-            </button>
-            {editingQuizId && (
+              <div className="flex items-center justify-end space-x-4 pt-4">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="w-full max-w-xs py-3 px-6 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors"
+                  className="py-2 px-4 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   キャンセル
                 </button>
-            )}
+                <button
+                  type="submit"
+                  className="py-2 px-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
+                  disabled={isLoading}
+                >
+                  {editingQuizId ? "問題を更新する" : "問題を追加する"}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       )}
 
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-4 text-center">既存の問題リスト</h2>
+
+        <div className="mb-4">
+          <label htmlFor="filterCategory" className="block text-lg font-medium mb-2">
+            カテゴリで絞り込み
+          </label>
+          <select
+            id="filterCategory"
+            name="filterCategory"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="w-full p-3 bg-secondary-bg border border-gray-600 rounded-md"
+          >
+            <option value="">すべてのカテゴリ</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.category_name}>
+                {cat.category_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="space-y-4">
-          {quizzes.map((q) => (
+          {quizzes
+            .filter(q => !filterCategory || q.category === filterCategory)
+            .map((q) => (
             <div key={q.id} className="p-4 bg-secondary-bg rounded-lg shadow">
               <p className="font-semibold text-lg">{q.question}</p>
+              <p className="text-sm text-gray-500">ID: {q.id}</p>
               <p className="text-sm text-gray-400">カテゴリ: {q.category}</p>
               <div className="flex justify-end space-x-2 mt-2">
                 <button
@@ -428,12 +424,7 @@ export default function AddQuizPage() {
                 >
                   修正
                 </button>
-                <button
-                  onClick={() => handleDelete(q.id)}
-                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  削除
-                </button>
+                
               </div>
             </div>
           ))}
@@ -441,6 +432,15 @@ export default function AddQuizPage() {
       </div>
 
       {isLoading && <LoadingOverlay />}
+
+      {showTopBtn && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-8 right-8 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-opacity duration-300"
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 }

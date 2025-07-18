@@ -180,8 +180,9 @@ export default function StartPage() {
 
       {!isLoading && (
         <div className="mb-4">
-          <label className="block mb-1">対象問題</label>
+          <label htmlFor="quiz-name-select" className="block mb-1">対象問題</label>
           <select
+            id="quiz-name-select"
             className="w-full border rounded p-2"
             value={activeQuizName}
             onChange={handleQuizNameChange}
@@ -274,6 +275,7 @@ export default function StartPage() {
               value={freeNumQuestions}
               onChange={(e) => setFreeNumQuestions(Number(e.target.value))}
               className="w-24 border border-gray-300 rounded p-2 ml-2"
+              placeholder="問題数を入力"
             />
           )}
         </div>
