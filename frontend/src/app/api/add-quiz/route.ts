@@ -16,11 +16,11 @@ export async function POST(request: Request) {
       quiz_name: targetSheet,
       category,
       question,
-      choice1: choices[0],
-      choice2: choices[1],
-      choice3: choices[2],
-      choice4: choices[3],
-      answer,
+      choice1: choices[0] ?? null,
+      choice2: choices[1] ?? null,
+      choice3: choices[2] ?? null,
+      choice4: choices[3] ?? null,
+      answer: answer,
       explanation,
     }).returning();
 

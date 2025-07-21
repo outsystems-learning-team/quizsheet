@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db, sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { quiz_list } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Zodスキーマを定義してリクエストボディを検証
@@ -18,7 +20,7 @@ export async function PUT(
 ) {
   const quizId = parseInt(params.id, 10);
   if (isNaN(quizId)) {
-    return new NextResponse('Invalid quiz ID', { status: 400 });
+    return NextResponse.json({ message: 'Invalid quiz ID' }, { status: 400 });
   }
 
   try {
@@ -26,9 +28,8 @@ export async function PUT(
     const validation = quizUpdateSchema.safeParse(body);
 
     if (!validation.success) {
-      return new NextResponse(JSON.stringify(validation.error.errors), {
+      return NextResponse.json({ message: validation.error.flatten().fieldErrors }, {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -37,28 +38,25 @@ export async function PUT(
     // DBのanswerは1-indexedなので+1する
     const answer = answerIndex + 1;
 
-    const result = await db.execute(sql`
-      UPDATE quiz_list
-      SET
-        category = ${category},
-        question = ${question},
-        choice1 = ${choices[0] ?? null},
-        choice2 = ${choices[1] ?? null},
-        choice3 = ${choices[2] ?? null},
-        choice4 = ${choices[3] ?? null},
-        answer = ${answer},
-        explanation = ${explanation ?? ''}
-      WHERE id = ${quizId}
-    `);
+    const result = await db.update(quiz_list).set({
+      category: category,
+      question: question,
+      choice1: choices[0] ?? null,
+      choice2: choices[1] ?? null,
+      choice3: choices[2] ?? null,
+      choice4: choices[3] ?? null,
+      answer: answer.toString(), // スキーマに合わせて文字列に変換
+      explanation: explanation ?? '',
+    }).where(eq(quiz_list.id, quizId)).returning();
 
-    if (result.rowsAffected === 0) {
-      return new NextResponse('Quiz not found', { status: 404 });
+    if (result.length === 0) {
+      return NextResponse.json({ message: 'Quiz not found' }, { status: 404 });
     }
 
     return NextResponse.json({ message: 'Quiz updated successfully' });
   } catch (error) {
     console.error('Error updating quiz:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -69,22 +67,19 @@ export async function DELETE(
 ) {
   const quizId = parseInt(params.id, 10);
   if (isNaN(quizId)) {
-    return new NextResponse('Invalid quiz ID', { status: 400 });
+    return NextResponse.json({ message: 'Invalid quiz ID' }, { status: 400 });
   }
 
   try {
-    const result = await db.execute(sql`
-      DELETE FROM quiz_list
-      WHERE id = ${quizId}
-    `);
+    const result = await db.delete(quiz_list).where(eq(quiz_list.id, quizId)).returning();
 
-    if (result.rowsAffected === 0) {
-      return new NextResponse('Quiz not found', { status: 404 });
+    if (result.length === 0) {
+      return NextResponse.json({ message: 'Quiz not found' }, { status: 404 });
     }
 
     return NextResponse.json({ message: 'Quiz deleted successfully' });
   } catch (error) {
     console.error('Error deleting quiz:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
