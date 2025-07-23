@@ -17,19 +17,8 @@ export default function StartPage() {
   const router = useRouter();
 
   /* ------------------------------  state  ------------------------------ */
-  const [selectedNumQuestionsOption, setSelectedNumQuestionsOption] = useState<string>("20");
-  const selectedNumQuestionsOptionRef = useRef(selectedNumQuestionsOption);
-  useEffect(() => { selectedNumQuestionsOptionRef.current = selectedNumQuestionsOption; }, [selectedNumQuestionsOption]);
-
-  const [freeNumQuestions, setFreeNumQuestions] = useState<number>(20);
-  const freeNumQuestionsRef = useRef(freeNumQuestions);
-  useEffect(() => { freeNumQuestionsRef.current = freeNumQuestions; }, [freeNumQuestions]);
-
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [activeQuizName, setActiveQuizName] = useState<string>(""); // activeSheet -> activeQuizName
-  const [questionOrder, setQuestionOrder] = useState("random"); // ★ 出題順序の状態
-  const { setQuestions, isLoading, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { isLoading, setIsLoading, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
