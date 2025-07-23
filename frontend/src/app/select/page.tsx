@@ -95,7 +95,7 @@ const handleQuestionToggle = (e: ChangeEvent<HTMLInputElement>) => {
     setActiveQuizName(quizName);
     setSelectedCategories([]);
     setSelectedIds([]);
-    
+
     setIsLoading(true);
     try {
       // カテゴリリストの再取得
@@ -142,12 +142,13 @@ const handleQuestionToggle = (e: ChangeEvent<HTMLInputElement>) => {
   const filtered = questions.filter((q) => selectedIds.includes(q.id));
 
   if (filtered.length === 0) {
-    setError("選択条件に合う問題がありません");
+    setError("問題が選択されていません");
     setIsLoading(false);
     return;
   }
   setQuestions(filtered); 
   router.push('/quiz');
+  setIsLoading(false);
 };
 
   return (
