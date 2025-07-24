@@ -164,14 +164,14 @@ const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onC
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b">
+    <li className="border-b">
       <div className="flex items-center justify-between">
         <label className="w-full flex justify- center text-left">
           <input
             type="checkbox"
             checked={isChecked}
             onChange={onCheckboxChange}
-            className="mr-4 h-4 w-4 text-blue-600 border-border-color rounded focus:ring-blue-500"
+            className=" mr-4 h-4 w-4 flex-shrink-0 item-center text-blue-600 border-border-color rounded focus:ring-blue-500"
             onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
           />
           <span className="font-semibold">{title}</span>
@@ -186,7 +186,7 @@ const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onC
         </button>
       </div>
       {isOpen && <div className="pb-4 pl-8">{children}</div>}
-    </div>
+    </li>
   );
 };
 
