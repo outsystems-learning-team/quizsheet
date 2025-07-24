@@ -82,8 +82,9 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
       !targetSheet ||
       !finalCategory
     ) {
-      setError("すべての項目を正しく入力してください。選択肢は2つ以上入力し、正解が選択肢に含まれているか確認してください。");
+      setError("すべての項目を正しく入力してください。選択肢は2つ以上入力し、正解が選択肢に含まれているか確認してください。また、カテゴリを選択してください。");
       setIsLoading(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // エラー時に上部へスクロール
       return;
     }
 
