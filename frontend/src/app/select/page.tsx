@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { ChangeEvent, useContext, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { QuizContext } from "@/context/QuizContext";
@@ -27,13 +27,13 @@ export default function SelectPage() {
   const [error, setError] = useState<string | null>(null);
 
   // /start/page.tsxから流用
-    const [selectedNumQuestionsOption, setSelectedNumQuestionsOption] = useState<string>("20");
+    const [selectedNumQuestionsOption, ] = useState<string>("20");
     const selectedNumQuestionsOptionRef = useRef(selectedNumQuestionsOption);
     useEffect(() => { selectedNumQuestionsOptionRef.current = selectedNumQuestionsOption; }, [selectedNumQuestionsOption]);
    
     const [quizNames, setQuizNames] = useState<QuizName[]>([]); // sheets -> quizNames
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [, setCategories] = useState<Category[]>([]);
+    const [, setSelectedCategories] = useState<string[]>([]);
     const [activeQuizName, setActiveQuizName] = useState<string>(""); // activeSheet -> activeQuizName
     const { questions,setQuestions, isLoading, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
   
@@ -80,7 +80,7 @@ export default function SelectPage() {
         setIsLoading(false);
       }
     })();
-  }, [setIsLoading, resetQuizState, setQuizNames, setCategories, setError]);
+  }, [setIsLoading, resetQuizState, setQuizNames, setCategories, setError, setQuestions]);
 
 // チェックボックスのトグル
 const handleQuestionToggle = (e: ChangeEvent<HTMLInputElement>) => {
