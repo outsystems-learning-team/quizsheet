@@ -1,12 +1,9 @@
 'use client';
 
-import { ChangeEvent, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { QuizContext } from "@/context/QuizContext";
-import { LoadingOverlay } from "../components/LoadingOverlay";
-
-import { Question } from "@shared/types";
 
 /**
  * スタートページコンポーネント
@@ -17,8 +14,8 @@ export default function StartPage() {
   const router = useRouter();
 
   /* ------------------------------  state  ------------------------------ */
-  const [error, setError] = useState<string | null>(null);
-  const { isLoading, setIsLoading, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [, setError] = useState<string | null>(null);
+  const { setIsLoading, resetQuizState } = useContext(QuizContext);
 
   /* ----------------------------  fetch once  --------------------------- */
   useEffect(() => {
