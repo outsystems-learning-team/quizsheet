@@ -1,24 +1,27 @@
 "use client";
 
-import { ChangeEvent, useContext, useEffect, useState, useRef,FC, ReactNode } from "react";
+import { ChangeEvent, useContext, useEffect, useState,FC, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 import { QuizContext } from "@/context/QuizContext";
 import { LoadingOverlay } from "../../components/LoadingOverlay";
 import { Question } from "@shared/types";
 
-// 型定義を修正
+/* -----型定義----- */
+// 問題
 interface QuizName {
   id: number;
   quiz_name: string;
   quiz_name_jp: string;
 }
 
+// カテゴリー
 interface Category {
   id: number; // idを追加
   category_name: string;
 }
 
+// 問題詳細
 interface AccordionItemProps {
   title: ReactNode;
   children: ReactNode;
@@ -31,18 +34,13 @@ export default function SelectPage() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  // /start/page.tsxから流用
-    const [selectedNumQuestionsOption, ] = useState<string>("20");
-    const selectedNumQuestionsOptionRef = useRef(selectedNumQuestionsOption);
-    useEffect(() => { selectedNumQuestionsOptionRef.current = selectedNumQuestionsOption; }, [selectedNumQuestionsOption]);
-   
-    const [quizNames, setQuizNames] = useState<QuizName[]>([]); // sheets -> quizNames
-    const [, setCategories] = useState<Category[]>([]);
-    const [, setSelectedCategories] = useState<string[]>([]);
-    const [activeQuizName, setActiveQuizName] = useState<string>(""); // activeSheet -> activeQuizName
-    const { questions,setQuestions, isLoading, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [quizNames, setQuizNames] = useState<QuizName[]>([]); // sheets -> quizNames
+  const [, setCategories] = useState<Category[]>([]);
+  const [, setSelectedCategories] = useState<string[]>([]);
+  const [activeQuizName, setActiveQuizName] = useState<string>(""); // activeSheet -> activeQuizName
+  const { questions,setQuestions, isLoading, setIsLoading, setAnsweredCount, setCorrectCount, setStreak, setCategoryStats, setIncorrectQuestions, resetQuizState } = useContext(QuizContext); // eslint-disable-line @typescript-eslint/no-unused-vars
   
+  // レンダリング時
   useEffect(() => {
     // コンポーネントがマウントされたときに結果関連のstateをリセット
     resetQuizState();
@@ -58,17 +56,11 @@ export default function SelectPage() {
         setQuizNames(quizNamesData);
 
         if (quizNamesData.length > 0) {
+          // 対象問題をセット
           setActiveQuizName(quizNamesData[0].quiz_name);
-          // カテゴリリストの取得
-          const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(quizNamesData[0].quiz_name)}`);
-          if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
-          const categoriesData: Category[] = await categoriesRes.json();
-          setCategories(categoriesData);
 
-          // カテゴリー名のリストを作成
-          const categoryNames = categoriesData.map(category => category.category_name);
-          // 問題の取得
-          const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(quizNamesData[0].quiz_name)}&categories=${encodeURIComponent(categoryNames.join(','))}`);
+          // 問題の取得（全問）
+          const quizzesRes = await fetch(`/api/select-quizzes?quiz_name=${encodeURIComponent(quizNamesData[0].quiz_name)}`);
           if (!quizzesRes.ok) {
             const errorText = await quizzesRes.text(); // Read response body as text for more info
             throw new Error(`Failed to fetch quizzes: ${quizzesRes.status} ${quizzesRes.statusText} - ${errorText}`);
@@ -106,14 +98,17 @@ export default function SelectPage() {
 
     setIsLoading(true);
     try {
-      // カテゴリリストの再取得
+      // カテゴリリストの取得
       const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(quizName)}`);
       if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
       const categoriesData: Category[] = await categoriesRes.json();
       setCategories(categoriesData);
 
+      // カテゴリー名のリストを作成
       const categoryNames = categoriesData.map(category => category.category_name);
-      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(quizName)}&categories=${encodeURIComponent(categoryNames.join(','))}`);
+      
+      // 問題を取得
+      const quizzesRes = await fetch(`/api/select-quizzes?quiz_name=${encodeURIComponent(quizName)}&categories=${encodeURIComponent(categoryNames.join(','))}`);
       if (!quizzesRes.ok) {
         const errorText = await quizzesRes.text(); // Read response body as text for more info
         throw new Error(`Failed to fetch quizzes: ${quizzesRes.status} ${quizzesRes.statusText} - ${errorText}`);
