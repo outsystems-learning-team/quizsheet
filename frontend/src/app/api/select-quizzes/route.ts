@@ -8,19 +8,11 @@ export async function GET(request: Request) {
   const quizName = searchParams.get('quiz_name');
   const categories = searchParams.get('categories'); // categoriesはカンマ区切り文字列を想定
 
-  console.log('Received categories:', categories);
-
   if (!quizName) {
     return new NextResponse('Quiz name is required', { status: 400 });
   }
-  if (!categories) {
-    return new NextResponse('Categories are required', { status: 400 });
-  }
 
   try {
-    const categoryArray = categories.split(',');
-    console.log('categoryArray:', categoryArray);
-
     // メインのクエリ
     let query = sql`
       SELECT *
@@ -30,11 +22,16 @@ export async function GET(request: Request) {
 
     // カテゴリー指定
     if (categories) {
+      console.log('Received categories:', categories);
+
+      const categoryArray = categories.split(',');
+      console.log('categoryArray:', categoryArray);
+
       query = sql`${query} AND category IN (${sql.join(categoryArray, sql`, `)})`;
     }
 
     // カテゴリー順にソート
-    query = sql`${query} ORDER BY category ASC`;
+    query = sql`${query} ORDER BY category ASC, id ASC`;
 
     const result = await db.execute(query);
     const quizData: QuizRow[] = result.rows as QuizRow[];
@@ -69,11 +66,11 @@ export async function GET(request: Request) {
           // 数値に変換できない場合は、不正な値として -1 を設定
           answerIndex = -1;
         }
-        console.log(`Quiz ID: ${row.id}, Answer (DB): '${row.answer}', Choices: [${choices.map(c => `'${c}'`).join(', ')}], Calculated answerIndex: ${answerIndex}`);
+        console.log(`Quiz ID: ${row.id}, category: '${row.category}', Choices: [${choices.map(c => `'${c}'`).join(', ')}], Calculated answerIndex: ${answerIndex}`);        
       } else {
         // その他の型の場合は -1 (不正な値)
         answerIndex = -1;
-        console.log(`Quiz ID: ${row.id}, Answer (DB): '${row.answer}', Choices: [${choices.map(c => `'${c}'`).join(', ')}], Calculated answerIndex: ${answerIndex} (Invalid type)`);
+        console.log(`Quiz ID: ${row.id}, category: '${row.category}', Choices: [${choices.map(c => `'${c}'`).join(', ')}], Calculated answerIndex: ${answerIndex}`);        
       }
 
       
