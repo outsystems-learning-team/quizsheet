@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { quiz_list } from '@/lib/schema';
+import { quiz_list, insertQuizListSchema } from '@/lib/schema';
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: 'error', message: 'Missing required fields' }, { status: 400 });
     }
 
-    const [newQuiz] = await db.insert(quiz_list).values({
+    const [newQuiz] = await db.insert(quiz_list).values(insertQuizListSchema.parse({
       quiz_name: targetSheet,
       category,
       question,
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       choice4: choices[3] ?? null,
       answer: answer,
       explanation,
-    }).returning();
+    })).returning();
 
     return NextResponse.json({ status: 'ok', data: newQuiz });
   } catch (error) {

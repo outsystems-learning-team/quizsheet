@@ -1,3 +1,5 @@
+// src/app/api/quiz/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { quiz_list } from "@/lib/schema";
@@ -36,8 +38,11 @@ export async function GET(req: NextRequest) {
     const data = await query;
     return NextResponse.json(data);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    // 修正点: エラーが Error オブジェクトのインスタンスであるかチェック
+    if (err instanceof Error) {
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+    // Error インスタンスでなかった場合のフォールバック
+    return NextResponse.json({ error: '不明なサーバーエラーが発生しました' }, { status: 500 });
   }
 }
-
-

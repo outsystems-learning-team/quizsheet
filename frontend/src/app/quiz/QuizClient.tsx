@@ -1,3 +1,5 @@
+// src/app/quiz/QuizClient.tsx
+
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -22,7 +24,10 @@ export default function QuizClient(): JSX.Element {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const { questions, setQuestions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
+  // --- MODIFIED LINE BELOW ---
+  // Remove setQuestions as it's not used in this component
+  const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
+  // --- END MODIFIED LINE ---
 
   const totalToAnswer = questions.length;
 

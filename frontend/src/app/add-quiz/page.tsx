@@ -19,6 +19,7 @@ interface Category {
 
 export default function AddQuizPage() {
   const [isLoading, setIsLoading] = useState(false);
+  // 'error' is now used in the JSX below
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
@@ -26,13 +27,15 @@ export default function AddQuizPage() {
   const [quizNames, setQuizNames] = useState<QuizName[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [targetSheet, setTargetSheet] = useState('');
-  
+
   const [quizzes, setQuizzes] = useState<Question[]>([]);
   const [editingQuiz, setEditingQuiz] = useState<Question | null>(null);
   const [filterCategory, setFilterCategory] = useState('');
 
   const fetchQuizzes = useCallback(async (sheet: string) => {
     setIsLoading(true);
+    // Clear previous errors when fetching new quizzes
+    setError(null);
     try {
       const quizQuery = sheet ? `quiz_name=${encodeURIComponent(sheet)}` : '';
       const quizzesRes = await fetch(`/api/quizzes?${quizQuery}`);
@@ -43,11 +46,12 @@ export default function AddQuizPage() {
       setError(e instanceof Error ? e.message : "クイズの取得に失敗しました。");
     }
     setIsLoading(false);
-  }, []);
+  }, []); // Depend on nothing as fetchQuizzes does not use outside vars besides 'sheet' argument
 
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoading(true);
+      setError(null); // Clear error before fetching
       try {
         const quizNamesRes = await fetch('/api/quiz-names');
         if (!quizNamesRes.ok) throw new Error(`Failed to fetch quiz names: ${quizNamesRes.statusText}`);
@@ -55,7 +59,7 @@ export default function AddQuizPage() {
         setQuizNames(quizNamesData);
         if (quizNamesData.length > 0) {
           setTargetSheet(quizNamesData[0].quiz_name);
-          fetchQuizzes(quizNamesData[0].quiz_name);
+          // fetchQuizzes will be called by the targetSheet useEffect
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "初期データの取得に失敗しました。");
@@ -64,11 +68,12 @@ export default function AddQuizPage() {
       }
     };
     fetchInitialData();
-  }, [fetchQuizzes]);
+  }, []); // No dependencies here, runs once on mount
 
   useEffect(() => {
     if (targetSheet) {
       const fetchCategories = async () => {
+        // setError(null); // Clear error before fetching
         try {
           const categoriesRes = await fetch(`/api/categories?quiz_name=${encodeURIComponent(targetSheet)}`);
           if (!categoriesRes.ok) throw new Error(`Failed to fetch categories: ${categoriesRes.statusText}`);
@@ -79,9 +84,9 @@ export default function AddQuizPage() {
         }
       };
       fetchCategories();
-      fetchQuizzes(targetSheet);
+      fetchQuizzes(targetSheet); // This call is dependent on targetSheet and fetchQuizzes
     }
-  }, [targetSheet, fetchQuizzes]);
+  }, [targetSheet, fetchQuizzes]); // Dependencies are correct here
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,11 +99,13 @@ export default function AddQuizPage() {
   const handleEdit = (quiz: Question) => {
     setEditingQuiz(quiz);
     setIsModalOpen(true);
+    setError(null); // Clear error when opening form
   };
 
   const handleDelete = async (quizId: number) => {
     if (window.confirm("この問題を削除してもよろしいですか？")) {
       setIsLoading(true);
+      setError(null); // Clear error before deleting
       try {
         const res = await fetch(`/api/quiz/${quizId}`, { method: 'DELETE' });
         if (!res.ok) throw new Error("問題の削除に失敗しました。");
@@ -116,6 +123,7 @@ export default function AddQuizPage() {
     setIsModalOpen(false);
     setEditingQuiz(null);
     fetchQuizzes(targetSheet);
+    setError(null); // Clear error after saving
   };
 
   return (
@@ -178,6 +186,13 @@ export default function AddQuizPage() {
       />
 
       {isLoading && <LoadingOverlay />}
+
+      {/* Display error message if it exists */}
+      {error && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-red-600 text-white p-4 rounded-lg shadow-lg">
+          エラー: {error}
+        </div>
+      )}
 
       {showTopBtn && (
         <button

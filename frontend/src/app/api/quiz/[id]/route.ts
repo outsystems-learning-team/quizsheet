@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { quiz_list } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
@@ -15,10 +15,14 @@ const quizUpdateSchema = z.object({
 
 // PUT: 問題を更新
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  // 修正点: params の型を Promise<> でラップ
+  { params }: { params: Promise<{ id: string }> } // ここを Promise<{ id: string }> に戻す
 ) {
-  const quizId = parseInt(params.id, 10);
+  // 修正点: params を await してから id にアクセス
+  const resolvedParams = await params; // まず params Promise を解決する
+  const quizId = parseInt(resolvedParams.id, 10); // 解決されたオブジェクトから id にアクセス
+
   if (isNaN(quizId)) {
     return NextResponse.json({ message: 'Invalid quiz ID' }, { status: 400 });
   }
@@ -62,10 +66,14 @@ export async function PUT(
 
 // DELETE: 問題を削除
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  // 修正点: params の型定義から Promise<> を削除
+  { params }: { params: Promise<{ id: string }> } // ここを Promise<{ id: string }> に戻す
 ) {
-  const quizId = parseInt(params.id, 10);
+  // 修正点: params を await してから id にアクセス
+  const resolvedParams = await params; // まず params Promise を解決する
+  const quizId = parseInt(resolvedParams.id, 10); // 解決されたオブジェクトから id にアクセス
+
   if (isNaN(quizId)) {
     return NextResponse.json({ message: 'Invalid quiz ID' }, { status: 400 });
   }
