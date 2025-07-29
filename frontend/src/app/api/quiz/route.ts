@@ -36,7 +36,10 @@ export async function GET(req: NextRequest) {
     const data = await query;
     return NextResponse.json(data);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    if (err instanceof Error) {
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
   }
 }
 
