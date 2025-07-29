@@ -17,7 +17,7 @@ const quizUpdateSchema = z.object({
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse> {
+) {
   const quizId = parseInt(params.id, 10);
   if (isNaN(quizId)) {
     return NextResponse.json({ message: 'Invalid quiz ID' }, { status: 400 });
@@ -64,7 +64,7 @@ export async function PUT(
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse> {
+) {
   const quizId = parseInt(params.id, 10);
   if (isNaN(quizId)) {
     return NextResponse.json({ message: 'Invalid quiz ID' }, { status: 400 });
