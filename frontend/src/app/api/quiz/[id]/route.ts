@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { quiz_list } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
@@ -15,7 +15,7 @@ const quizUpdateSchema = z.object({
 
 // PUT: 問題を更新
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const quizId = parseInt(params.id, 10);
@@ -62,7 +62,7 @@ export async function PUT(
 
 // DELETE: 問題を削除
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const quizId = parseInt(params.id, 10);

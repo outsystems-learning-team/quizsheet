@@ -19,14 +19,15 @@ interface Category {
 
 export default function AddQuizPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [setError] = useState<string | null>(null);
+  // 修正箇所: errorMessage と setErrorMessage に変更
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   const [quizNames, setQuizNames] = useState<QuizName[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [targetSheet, setTargetSheet] = useState('');
-  
+
   const [quizzes, setQuizzes] = useState<Question[]>([]);
   const [editingQuiz, setEditingQuiz] = useState<Question | null>(null);
   const [filterCategory, setFilterCategory] = useState('');
@@ -40,7 +41,8 @@ export default function AddQuizPage() {
       const quizzesData: Question[] = await quizzesRes.json();
       setQuizzes(quizzesData);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "クイズの取得に失敗しました。");
+      // 修正箇所: setErrorMessage を呼び出す
+      setErrorMessage(e instanceof Error ? e.message : "クイズの取得に失敗しました。");
     }
     setIsLoading(false);
   }, []);
@@ -58,7 +60,8 @@ export default function AddQuizPage() {
           fetchQuizzes(quizNamesData[0].quiz_name);
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : "初期データの取得に失敗しました。");
+        // 修正箇所: setErrorMessage を呼び出す
+        setErrorMessage(e instanceof Error ? e.message : "初期データの取得に失敗しました。");
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +78,8 @@ export default function AddQuizPage() {
           const categoriesData: Category[] = await categoriesRes.json();
           setCategories(categoriesData);
         } catch (e) {
-          setError(e instanceof Error ? e.message : "カテゴリの取得に失敗しました。");
+          // 修正箇所: setErrorMessage を呼び出す
+          setErrorMessage(e instanceof Error ? e.message : "カテゴリの取得に失敗しました。");
         }
       };
       fetchCategories();
@@ -105,7 +109,8 @@ export default function AddQuizPage() {
         alert("問題を削除しました。");
         fetchQuizzes(targetSheet);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "問題の削除中にエラーが発生しました。");
+        // 修正箇所: setErrorMessage を呼び出す
+        setErrorMessage(err instanceof Error ? err.message : "問題の削除中にエラーが発生しました。");
       } finally {
         setIsLoading(false);
       }
@@ -178,6 +183,13 @@ export default function AddQuizPage() {
       />
 
       {isLoading && <LoadingOverlay />}
+
+      {/* エラーメッセージの表示（任意） */}
+      {errorMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-red-600 text-white p-4 rounded-lg shadow-lg">
+          エラー: {errorMessage}
+        </div>
+      )}
 
       {showTopBtn && (
         <button
