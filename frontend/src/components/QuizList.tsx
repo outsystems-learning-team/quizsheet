@@ -12,11 +12,11 @@ interface QuizListProps {
 export default function QuizList({ quizzes, filterCategory, categories, onFilterChange, onEdit, onDelete }: QuizListProps) {
   return (
     <div className="mt-12">
-      <h2 className="text-2xl font-bold mb-4 text-center">既存の問題リスト</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">問題リスト</h2>
 
       <div className="mb-4">
         <label htmlFor="filterCategory" className="block text-lg font-medium mb-2">
-          カテゴリで絞り込み
+          カテゴリを選択
         </label>
         <select
           id="filterCategory"

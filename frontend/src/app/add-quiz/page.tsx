@@ -120,11 +120,11 @@ export default function AddQuizPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-primary-bg shadow-lg rounded-lg">
-      <h1 className="text-4xl font-bold mb-8 text-center">問題管理ダッシュボード</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center">問題管理</h1>
 
       <div className="mb-8">
         <label htmlFor="targetSheet" className="block text-xl font-semibold mb-3">
-          対象クイズの選択
+          対象問題の選択
         </label>
         <select
           id="targetSheet"
@@ -157,6 +157,7 @@ export default function AddQuizPage() {
       {isModalOpen && (
         <QuizForm
           categories={categories}
+          quizNames={quizNames}
           targetSheet={targetSheet}
           editingQuiz={editingQuiz}
           onQuizSaved={handleQuizSaved}

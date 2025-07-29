@@ -23,6 +23,7 @@ const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onC
           onChange={onCheckboxChange}
           className="mr-4 h-4 w-4 text-blue-600 border-border-color rounded focus:ring-blue-500"
           onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
+          aria-label="チェックボックス"
         />
         <button
           onClick={() => setIsOpen(!isOpen)}

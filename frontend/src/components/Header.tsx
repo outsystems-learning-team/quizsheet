@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 import Sidebar from './Sidebar'; // Sidebar コンポーネントをインポート
+import { IoLogOut } from "react-icons/io5";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -17,7 +18,7 @@ export default function Header() {
     <header className="bg-primary-bg shadow-md">
       <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* ハンバーガーボタンとタイトルをグループ化 */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           {session && (
             <button
               onClick={toggleSidebar}
@@ -40,25 +41,26 @@ export default function Header() {
               </svg>
             </button>
           )}
-          <Link href="/" className="text-2xl font-bold">
+          <Link href="/" className="text-xl sm:text-2xl font-bold">
             QuizSheet
           </Link>
         </div>
         <div>
           {session ? (
-            <div className="flex items-center gap-4">
-              <span className="">{session.user?.name}</span>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span>{session.user?.name}</span>
               <button
                 onClick={() => signOut()} 
-                className="px-4 py-2 bg-red-500 text-primary-text rounded-md hover:bg-red-600 transition-colors"
+                className="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                aria-label="サインアウト"
               >
-                ログアウト
+                <IoLogOut className="h-8 w-8 text-red-500" />
               </button>
             </div>
           ) : (
             <button 
               onClick={() => signIn('github')} 
-              className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors text-sm sm:text-base"
             >
               GitHubでログイン
             </button>
@@ -70,3 +72,4 @@ export default function Header() {
     </header>
   );
 }
+

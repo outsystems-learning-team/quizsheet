@@ -3,13 +3,14 @@ import type { Question } from "@shared/types";
 
 interface QuizFormProps {
   categories: { id: number; category_name: string }[];
+  quizNames: { id: number; quiz_name: string; quiz_name_jp: string }[];
   targetSheet: string;
   editingQuiz: Question | null;
   onQuizSaved: () => void;
   onCancel: () => void;
 }
 
-export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizSaved, onCancel }: QuizFormProps) {
+export default function QuizForm({ categories, quizNames, targetSheet, editingQuiz, onQuizSaved, onCancel }: QuizFormProps) {
   const [quiz, setQuiz] = useState({
     question: "",
     options: ["", "", "", ""],
@@ -17,6 +18,7 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
     explanation: "",
     category: "",
   });
+  const [selectedQuizName, setSelectedQuizName] = useState(targetSheet);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,7 +81,7 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
       !quiz.answer ||
       answerIndex === -1 ||
       !quiz.explanation ||
-      !targetSheet ||
+      !selectedQuizName ||
       !finalCategory
     ) {
       setError("すべての項目を正しく入力してください。選択肢は2つ以上入力し、正解が選択肢に含まれているか確認してください。また、カテゴリを選択してください。");
@@ -105,7 +107,7 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
         });
       } else {
         const postBody = {
-          targetSheet,
+          targetSheet: selectedQuizName,
           category: finalCategory,
           question: quiz.question,
           choices: filledOptions,
@@ -132,7 +134,7 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
     } finally {
       setIsLoading(false);
     }
-  }, [quiz, targetSheet, editingQuiz, onQuizSaved]);
+  }, [quiz, selectedQuizName, editingQuiz, onQuizSaved]);
 
   return (
     <div
@@ -146,6 +148,17 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
         <form onSubmit={handleSubmit} className="space-y-6">
           <h2 className="text-2xl font-bold mb-4">{editingQuiz ? "問題を編集" : "新しい問題を追加"}</h2>
           {error && <p className="text-red-500 text-center">{error}</p>}
+
+          <div>
+            <label htmlFor="quizName" className="block text-lg font-medium mb-2">対象問題</label>
+            <select id="quizName" name="quizName" value={selectedQuizName} onChange={(e) => setSelectedQuizName(e.target.value)} className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md" required>
+              {quizNames.map((q) => (
+                <option key={q.id} value={q.quiz_name}>
+                  {q.quiz_name_jp}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label htmlFor="question" className="block text-lg font-medium mb-2">問題文</label>
@@ -178,7 +191,7 @@ export default function QuizForm({ categories, targetSheet, editingQuiz, onQuizS
 
           <div>
             <label htmlFor="category" className="block text-lg font-medium mb-2">既存カテゴリを選択</label>
-            <select id="category" name="category" value={quiz.category} onChange={handleInputChange} className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md" disabled={!targetSheet}>
+            <select id="category" name="category" value={quiz.category} onChange={handleInputChange} className="w-full p-3 bg-primary-bg border border-gray-600 rounded-md" disabled={!selectedQuizName}>
               <option value="">カテゴリを選択しない</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.category_name}>{cat.category_name}</option>
