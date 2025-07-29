@@ -43,7 +43,8 @@ export default function AddQuizPage() {
       const quizzesData: Question[] = await quizzesRes.json();
       setQuizzes(quizzesData);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "クイズの取得に失敗しました。");
+      // 修正箇所: setErrorMessage を呼び出す
+      setErrorMessage(e instanceof Error ? e.message : "クイズの取得に失敗しました。");
     }
     setIsLoading(false);
   }, []); // Depend on nothing as fetchQuizzes does not use outside vars besides 'sheet' argument
@@ -62,7 +63,8 @@ export default function AddQuizPage() {
           // fetchQuizzes will be called by the targetSheet useEffect
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : "初期データの取得に失敗しました。");
+        // 修正箇所: setErrorMessage を呼び出す
+        setErrorMessage(e instanceof Error ? e.message : "初期データの取得に失敗しました。");
       } finally {
         setIsLoading(false);
       }
@@ -80,7 +82,8 @@ export default function AddQuizPage() {
           const categoriesData: Category[] = await categoriesRes.json();
           setCategories(categoriesData);
         } catch (e) {
-          setError(e instanceof Error ? e.message : "カテゴリの取得に失敗しました。");
+          // 修正箇所: setErrorMessage を呼び出す
+          setErrorMessage(e instanceof Error ? e.message : "カテゴリの取得に失敗しました。");
         }
       };
       fetchCategories();
@@ -112,7 +115,8 @@ export default function AddQuizPage() {
         alert("問題を削除しました。");
         fetchQuizzes(targetSheet);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "問題の削除中にエラーが発生しました。");
+        // 修正箇所: setErrorMessage を呼び出す
+        setErrorMessage(err instanceof Error ? err.message : "問題の削除中にエラーが発生しました。");
       } finally {
         setIsLoading(false);
       }

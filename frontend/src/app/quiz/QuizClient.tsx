@@ -24,10 +24,7 @@ export default function QuizClient(): JSX.Element {
   const router = useRouter();
   const { data: session } = useSession();
 
-  // --- MODIFIED LINE BELOW ---
-  // Remove setQuestions as it's not used in this component
   const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
-  // --- END MODIFIED LINE ---
 
   const totalToAnswer = questions.length;
 
