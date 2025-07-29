@@ -19,7 +19,7 @@ interface Category {
 
 export default function AddQuizPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
 
