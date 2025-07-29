@@ -22,7 +22,7 @@ export default function QuizClient(): JSX.Element {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
+  const { questions, setQuestions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
 
   const totalToAnswer = questions.length;
 
