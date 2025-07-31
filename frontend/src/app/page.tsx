@@ -308,13 +308,21 @@ export default function StartPage() {
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="w-full py-3 rounded-lg text-primary-text bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
-        disabled={isLoading || selectedCategories.length === 0}
-      >
-        スタート
-      </button>
+      <div className="flex gap-4">
+        <button
+          type="submit"
+          className="flex-[7] py-3 rounded-lg text-primary-text bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
+          disabled={isLoading || selectedCategories.length === 0}
+        >
+          スタート
+        </button>
+        <button
+          type="button"
+          className="flex-[3] py-3 rounded-lg text-white bg-[#fa173d] hover:opacity-90 disabled:opacity-50"
+          onClick={()=>router.push('/select')}>
+          問題選択
+        </button>
+      </div>
       {isLoading && <LoadingOverlay />}
     </form>
   );
