@@ -1,3 +1,5 @@
+// src/app/quiz/QuizClient.tsx
+
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -24,7 +26,7 @@ export default function QuizClient(): JSX.Element {
 
   const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
 
-  const totalToAnswer = questions.length;
+  
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -42,14 +44,6 @@ export default function QuizClient(): JSX.Element {
    * 次の問題へ進むハンドラ
    */
   const handleNext = (): void => {
-    const isLast =
-      answeredCount >= totalToAnswer || currentIndex >= questions.length - 1;
-
-    if (isLast) {
-      router.push(`/result`);
-      return;
-    }
-
     setSelected(null);
     setCurrentIndex((i) => i + 1);
   };
@@ -111,6 +105,14 @@ export default function QuizClient(): JSX.Element {
         },
       };
     });
+
+    // 最後の問題かどうかの判定を追加
+    if (currentIndex >= questions.length - 1) {
+      // 少し待ってから結果ページに遷移
+      setTimeout(() => {
+        router.push(`/result`);
+      }, 100); // 100msの遅延
+    }
   };
 
   /**

@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Question } from "@shared/types";
 
 interface AccordionItemProps {
@@ -23,6 +23,7 @@ const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onC
           onChange={onCheckboxChange}
           className="mr-4 h-4 w-4 text-blue-600 border-border-color rounded focus:ring-blue-500"
           onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
+          aria-label="チェックボックス"
         />
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -57,9 +58,11 @@ export const ResultCard: FC<ResultCardProps> = ({
   onRetrySelected,
 }) => {
   const rate = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-  const [checkedQuestionIds, setCheckedQuestionIds] = useState<number[]>(
-    incorrectQuestions.map((q) => q.id)
-  );
+  const [checkedQuestionIds, setCheckedQuestionIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    setCheckedQuestionIds(incorrectQuestions.map((q) => q.id));
+  }, [incorrectQuestions]);
 
   const handleCheckboxChange = (questionId: number) => {
     setCheckedQuestionIds((prev) =>

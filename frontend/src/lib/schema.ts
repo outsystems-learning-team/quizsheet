@@ -1,4 +1,5 @@
 import { pgTable, text, varchar, timestamp, integer, primaryKey, uuid, boolean } from 'drizzle-orm/pg-core';
+import { createInsertSchema } from 'drizzle-zod';
 import type { AdapterAccount } from '@auth/core/adapters';
 
 export const quiz_list = pgTable('quiz_list', {
@@ -13,6 +14,8 @@ export const quiz_list = pgTable('quiz_list', {
   answer: text('answer'),
   explanation: text('explanation'),
 });
+
+export const insertQuizListSchema = createInsertSchema(quiz_list);
 
 export const category_list = pgTable('category_list', {
     id: integer('id').primaryKey(),
