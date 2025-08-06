@@ -44,14 +44,6 @@ export default function QuizClient(): JSX.Element {
    * 次の問題へ進むハンドラ
    */
   const handleNext = (): void => {
-    const isLast =
-      answeredCount >= totalToAnswer || currentIndex >= questions.length - 1;
-
-    if (isLast) {
-      router.push(`/result`);
-      return;
-    }
-
     setSelected(null);
     setCurrentIndex((i) => i + 1);
   };
@@ -113,6 +105,14 @@ export default function QuizClient(): JSX.Element {
         },
       };
     });
+
+    // 最後の問題かどうかの判定を追加
+    if (currentIndex >= questions.length - 1) {
+      // 少し待ってから結果ページに遷移
+      setTimeout(() => {
+        router.push(`/result`);
+      }, 100); // 100msの遅延
+    }
   };
 
   /**

@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Question } from "@shared/types";
 
 interface AccordionItemProps {
@@ -58,9 +58,11 @@ export const ResultCard: FC<ResultCardProps> = ({
   onRetrySelected,
 }) => {
   const rate = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-  const [checkedQuestionIds, setCheckedQuestionIds] = useState<number[]>(
-    incorrectQuestions.map((q) => q.id)
-  );
+  const [checkedQuestionIds, setCheckedQuestionIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    setCheckedQuestionIds(incorrectQuestions.map((q) => q.id));
+  }, [incorrectQuestions]);
 
   const handleCheckboxChange = (questionId: number) => {
     setCheckedQuestionIds((prev) =>
