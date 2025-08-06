@@ -1,11 +1,12 @@
 "use client";
 
-import { ChangeEvent, useContext, useEffect, useState,FC, ReactNode } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { QuizContext } from "@/context/QuizContext";
 import { LoadingOverlay } from "../../components/LoadingOverlay";
 import { Question } from "@shared/types";
+import { QuizSelector } from "../../components/QuizSelector";
 
 /* -----型定義----- */
 // 問題
@@ -19,14 +20,6 @@ interface QuizName {
 interface Category {
   id: number; // idを追加
   category_name: string;
-}
-
-// 問題詳細
-interface AccordionItemProps {
-  title: ReactNode;
-  children: ReactNode;
-  isChecked: boolean;
-  onCheckboxChange: () => void;
 }
 
 export default function SelectPage() {
@@ -154,36 +147,7 @@ export default function SelectPage() {
   setIsLoading(false);
 };
 
-  // AccordionView
-const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onCheckboxChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <li className="border-b">
-      <div className="flex items-center justify-between">
-        <label className="w-full flex justify- center text-left">
-          <input
-            type="checkbox"
-            checked={isChecked}
-            onChange={onCheckboxChange}
-            className=" mr-4 h-4 w-4 flex-shrink-0 item-center text-blue-600 border-border-color rounded focus:ring-blue-500"
-            onClick={(e) => e.stopPropagation()} // Prevent accordion from toggling
-          />
-          <span className="font-semibold">{title}</span>
-        </label>
-        
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-16 py-4 items-center focus:outline-none"
-        >
-          <span>{isOpen ? "▲" : "▼"}</span>
-        </button>
-      </div>
-      {isOpen && <div className="pb-4 pl-8">{children}</div>}
-    </li>
-  );
-};
+  
 
   // mainView
   return (
@@ -219,41 +183,13 @@ const AccordionItem: FC<AccordionItemProps> = ({ title, children, isChecked, onC
 
       {!isLoading && (
         <>
-          <label className="block mb-1">問題選択</label>
-          <div className="flex justify-end gap-4 mb-4">
-            <button
-              onClick={handleSelectAll}
-              className="text-sm text-[#fa173d] hover:underline"
-            >
-              全て選択
-            </button>
-            <button
-              onClick={handleDeselectAll}
-              className="text-sm text-[#fa173d] hover:underline"
-            >
-              全て解除
-            </button>
-          </div>
-
-          <ul className="divide-y border rounded pb-20">
-            {questions.map((q) => (
-              <AccordionItem
-                key={q.id}
-                title={q.question}
-                isChecked={selectedIds.includes(q.id)}
-                onCheckboxChange={() => handleCheckboxChange(q.id)}
-              >
-                <div className="bg-primary-bg p-4 rounded-lg">
-                  <p>正解: {q.choices[q.answerIndex]}</p>
-                  <p className="text-sm mt-2">
-                    解説: {q.explanation}
-                  </p>
-                </div>
-              </AccordionItem>
-            ))}
-          </ul>
-
-          
+          <QuizSelector
+            questions={questions}
+            selectedIds={selectedIds}
+            onCheckboxChange={handleCheckboxChange}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+          />
         </>
       )}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-4">
