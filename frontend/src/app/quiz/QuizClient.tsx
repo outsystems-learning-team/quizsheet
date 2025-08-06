@@ -26,7 +26,7 @@ export default function QuizClient(): JSX.Element {
 
   const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
 
-  const totalToAnswer = questions.length;
+  
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selected, setSelected] = useState<number | null>(null);
