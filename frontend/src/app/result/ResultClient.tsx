@@ -36,7 +36,7 @@ export default function ResultPage() {
         streak={streak}
         categoryStats={categoryStats}
         incorrectQuestions={incorrectQuestions}
-        onRestart={() => router.push("/start")}
+        onRestart={() => router.push("/")}
         onRetrySelected={handleRetrySelected}
       />
     </div>
