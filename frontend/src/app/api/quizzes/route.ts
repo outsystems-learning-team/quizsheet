@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const limit = searchParams.get('limit');
 
   try {
+    // --- 1. Get all matching IDs ---
     const conditions = [];
     if (quizName) {
       conditions.push(sql`quiz_name = ${quizName}`);
@@ -24,21 +25,37 @@ export async function GET(request: Request) {
       whereClause = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
     }
 
-    let query = sql`
-      SELECT *
-      FROM quiz_list
-      ${whereClause}
-      ORDER BY id ASC
-    `;
+    {/* 25-10-16 門田 改修部分(ランダム機能の修正) */}
+    // IDだけをSELECT文で取得
+    const idQuery = sql`SELECT id FROM quiz_list ${whereClause}`;
+    const idsResult = await db.execute(idQuery);
+    // 取得したIDを数字の配列(allIds)に変換する
+    const allIds = (idsResult.rows as { id: number }[]).map((row) => row.id);
 
-    if (limit) {
-      query = sql`${query} LIMIT ${parseInt(limit, 10)}`;
+    if (allIds.length === 0) {
+      return NextResponse.json([]);
     }
 
-    const result = await db.execute(query);
-    const quizData: QuizRow[] = result.rows as QuizRow[];
+    // --- 2. Shuffle IDs and take a slice ---
+    // IDの配列をランダムに並び替え
+    const shuffledIds = allIds.sort(() => Math.random() - 0.5);
+    // ユーザーが指定した問題数を取得
+    const limitNum = limit ? parseInt(limit, 10) : allIds.length;
+    // 配列の先頭から必要な数だけ取り出す
+    const selectedIds = shuffledIds.slice(0, limitNum);
 
-    // ... (rest of the formatting logic remains the same)
+    if (selectedIds.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    // --- 3. Fetch full data for the selected IDs ---
+    // 選ばれたIDに一致する問題の全データを取得
+    const finalQuery = sql`SELECT * FROM quiz_list WHERE id IN (${sql.join(
+      selectedIds,
+      sql`, `
+    )})`;
+    const result = await db.execute(finalQuery);
+    
     type QuizRow = {
       id: number;
       quiz_name: string;
@@ -51,20 +68,25 @@ export async function GET(request: Request) {
       answer: string | number;
       explanation: string;
     };
-    const formattedQuizData = quizData.map((row: QuizRow) => {
+    const quizData: QuizRow[] = result.rows as QuizRow[];
+
+    // --- 4. Preserve the random order ---
+    const quizDataMap = new Map(quizData.map((q) => [q.id, q]));
+    const orderedQuizData = selectedIds
+      .map((id) => quizDataMap.get(id))
+      .filter((q): q is QuizRow => q !== undefined);
+
+    // --- 5. Format the data ---
+    const formattedQuizData = orderedQuizData.map((row) => {
       const choices = [row.choice1, row.choice2, row.choice3, row.choice4].filter(
-        (choice) => typeof choice === 'string' && choice.trim() !== ''
+        (choice): choice is string => typeof choice === 'string' && choice.trim() !== ''
       );
       let answerIndex: number;
       if (typeof row.answer === 'number') {
         answerIndex = row.answer - 1;
       } else if (typeof row.answer === 'string') {
         const parsedAnswer = parseInt(row.answer, 10);
-        if (!isNaN(parsedAnswer)) {
-          answerIndex = parsedAnswer - 1;
-        } else {
-          answerIndex = -1;
-        }
+        answerIndex = !isNaN(parsedAnswer) ? parsedAnswer - 1 : -1;
       } else {
         answerIndex = -1;
       }
