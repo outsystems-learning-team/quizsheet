@@ -38,10 +38,6 @@ export async function GET(request: Request) {
       
       let idsResult = await db.execute(idQuery);
       let allIds = (idsResult.rows as { id: number }[]).map((row) => row.id);
-  
-      // 25-10-17 以下 門田 追加部分(allIdsの確認)
-      console.log("first allIds:");
-      console.log(allIds);
       
       if (allIds.length === 0) {
         return NextResponse.json([]);
@@ -55,17 +51,8 @@ export async function GET(request: Request) {
         processedIDs = [...allIds].sort(() => Math.random() -0.5);
       }
 
-      console.log("second allIds:");
-      console.log(allIds);
-
-      console.log("shuffledIds:");
-      console.log(processedIDs);
-
       let limitNum = limit ? parseInt(limit, 10) : allIds.length;
       let selectedIds = processedIDs.slice(0, limitNum);
-
-      console.log("selected Ids");
-      console.log(selectedIds);
   
       if (selectedIds.length === 0) {
         return NextResponse.json([]);
