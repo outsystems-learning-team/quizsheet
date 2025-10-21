@@ -30,14 +30,18 @@ export async function GET(request: Request) {
   
       // 25-10-16 以下 門田 追加部分(ランダム機能の修正)
       // IDの取得
-      let idQuery = sql`
+      const idQuery = sql`
         SELECT id 
         FROM quiz_list 
         ${whereClause}
       `;
       
-      let idsResult = await db.execute(idQuery);
-      let allIds = (idsResult.rows as { id: number }[]).map((row) => row.id);
+      const idsResult = await db.execute(idQuery);
+      const allIds = (idsResult.rows as { id: number }[]).map((row) => row.id);
+
+      
+      console.log("first allIds:");//for debug
+      console.log(allIds);//for debug
       
       if (allIds.length === 0) {
         return NextResponse.json([]);
@@ -46,30 +50,48 @@ export async function GET(request: Request) {
       // --- 2. Process Ids based on order ---
       let processedIDs = allIds;
 
+      console.log("second allIds:");//for debug
+      console.log(allIds);//for debug
+
+      console.log("shuffledIds:");//for debug
+      console.log(processedIDs);//for debug
+
       // 'randomが指定されている時のみシャッフルする'
       if (order === 'random'){
         processedIDs = [...allIds].sort(() => Math.random() -0.5);
       }
 
-      let limitNum = limit ? parseInt(limit, 10) : allIds.length;
-      let selectedIds = processedIDs.slice(0, limitNum);
+      const limitNum = limit ? parseInt(limit, 10) : allIds.length;
+      const selectedIds = processedIDs.slice(0, limitNum);
+
+      console.log("selected Ids");//for debug
+      console.log(selectedIds);//for debug
   
       if (selectedIds.length === 0) {
         return NextResponse.json([]);
       }
   
       // --- 3. Fetch full data for the selected IDs ---
-      // IDと一致する問題のみを取得
-      let finalQuery = sql`
+      // selectedIdsと同じ順番で問題を出題
+      let orderByCase = sql``;
+      if (selectedIds.length > 0) {
+        const caseStatements = selectedIds.map((id, index) => sql`WHEN id = ${id} THEN ${index + 1}`);
+        orderByCase = sql`ORDER BY CASE ${sql.join(caseStatements, sql` `)} END`;
+      }
+
+      const finalQuery = sql`
         SELECT * 
         FROM quiz_list 
         WHERE id IN (${sql.join(selectedIds,sql`, `)})
+        ${orderByCase}
       `;
-      
+     
+      const result = await db.execute(finalQuery);
+      console.log('Executed SQL:', finalQuery); //for debug
+      console.log('Result:', result); //for debug
+
       // 追加部分終了
 
-      const result = await db.execute(finalQuery);
-      
   type QuizRow = {
         id: number;
         quiz_name: string;
