@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       let orderByCase;
       let finalQuery;
 
-      if (order === 'random ' && selectedIds.length > 0) {
+      if (order === 'random' && selectedIds.length > 0) {
         const caseStatements = selectedIds.map((id, index) => sql`WHEN id = ${id} THEN ${index + 1}`);
         orderByCase = sql`ORDER BY CASE ${sql.join(caseStatements, sql` `)} END`;
 
