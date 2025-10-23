@@ -6,12 +6,11 @@ export async function GET(request: Request) {
   const quizName = searchParams.get('quiz_name');
   const categories = searchParams.get('categories');
   const limit = searchParams.get('limit');
-  // 25-10/17 門田 追加部分 order パラメータの取得
   const order = searchParams.get('order');
   
 
     try {
-      // --- 1. Get all matching IDs ---
+      // 1.カテゴリと一致するIDを取得する
 
       const conditions = [];
       if (quizName) {
@@ -29,8 +28,6 @@ export async function GET(request: Request) {
         whereClause = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
       }
       
-      // 25-10-16 以下 門田 追加部分(ランダム機能の修正)
-      // IDを取得
       const idQuery = sql`
         SELECT id 
         FROM quiz_list 
@@ -45,10 +42,8 @@ export async function GET(request: Request) {
         return NextResponse.json([]);
       }
   
-      // --- 2. Process Ids based on order ---
+      // 2.randomが指定されている時のみ、配列をランダムにソートする
       let processedIDs = allIds;
-
-      //randomが指定されている時のみ、配列をランダムにソートする
       if (order === 'random'){
         processedIDs = [...allIds].sort(() => Math.random() -0.5);
       }
@@ -60,11 +55,10 @@ export async function GET(request: Request) {
         return NextResponse.json([]);
       }
   
-      // --- 3. Fetch full data for the selected IDs ---
+      // 3.出題順がランダムになるように調整
       let orderByCase;
       let finalQuery;
 
-      //出題順がランダムになるように調整
       if (order === 'random ' && selectedIds.length > 0) {
         const caseStatements = selectedIds.map((id, index) => sql`WHEN id = ${id} THEN ${index + 1}`);
         orderByCase = sql`ORDER BY CASE ${sql.join(caseStatements, sql` `)} END`;
@@ -75,7 +69,7 @@ export async function GET(request: Request) {
           WHERE id IN (${sql.join(selectedIds,sql`, `)})
           ${orderByCase}
       `;}else{
-        //そうでないときはIDの昇順に取得し出題する
+        //randomの指定がない時はIDの昇順に取得し、出題する
         finalQuery = sql`
           SELECT * 
           FROM quiz_list 
@@ -85,8 +79,6 @@ export async function GET(request: Request) {
       }
      
       const result = await db.execute(finalQuery);
-
-      // 追加部分終了
 
   type QuizRow = {
         id: number;
@@ -102,7 +94,6 @@ export async function GET(request: Request) {
       };
       const quizData: QuizRow[] = result.rows as QuizRow[];
   
-      // --- 4. Format the data ---
       const formattedQuizData = quizData.map((row) => {
         const choices = [row.choice1, row.choice2, row.choice3, row.choice4].filter(
           (choice): choice is string => typeof choice === 'string' && choice.trim() !== ''

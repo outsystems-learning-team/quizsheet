@@ -22,7 +22,7 @@ import { Question } from "@shared/types";
 
 /**
  * スタートページコンポーネント
- * クイズの開始設定（問題数、シート、カテゴリ選択）を提供します。
+ * クイズの開始設定（問題数、シート、カテゴリ選択）を提供
  * @returns {JSX.Element} スタートページの UI 要素
  */
 export default function StartPage() {
@@ -89,8 +89,6 @@ export default function StartPage() {
       }
 
       const finalNumQuestions = selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current);
-
-      // 25-10-17 門田 追加部分(クイズデータの取得)
       const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}&limit=${finalNumQuestions}&order=${questionOrder}`);
       if (!quizzesRes.ok) {
         const errorText = await quizzesRes.text(); // Read response body as text for more info
@@ -108,7 +106,6 @@ export default function StartPage() {
         return;
       }
 
-      /* 25-10-17 門田 追加部分(API側で順序と件数が制御されるため、そのままセット) */
       setQuestions(questions);
 
       router.push(`/quiz`);
