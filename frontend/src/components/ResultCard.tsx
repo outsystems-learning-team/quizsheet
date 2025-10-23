@@ -153,12 +153,6 @@ export const ResultCard: FC<ResultCardProps> = ({
                 onCheckboxChange={() => handleCheckboxChange(q.id)}
               >
                 <div className="bg-primary-bg p-4 rounded-lg">
-                  {/* 25/10/15 門田 改修部分(解説の適切な改行表示)
-                  　旧：
-                  　<p>正解: {q.choices[q.answerIndex]}</p>
-                  　<p className="text-sm mt-2">
-                  　解説: {q.explanation}
-                  */}
                   <h3 className="font-medium mb-2">解説</h3>
                   <p className="text-sm mt-2 whitespace-pre-wrap">
                     {q.explanation}
