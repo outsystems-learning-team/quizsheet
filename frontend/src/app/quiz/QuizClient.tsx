@@ -26,13 +26,12 @@ export default function QuizClient(): JSX.Element {
 
   const { questions, isLoading, answeredCount, setAnsweredCount, correctCount, setCorrectCount, streak, setStreak, setCategoryStats, setIncorrectQuestions } = useContext(QuizContext);
 
-  
-
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [selected, setSelected] = useState<number | null>(null);
   const questionStartTime = useRef<number | null>(null);
 
   const current = questions[currentIndex] ?? null;
+  const isLastQuestion = questions.length > 0 && currentIndex === questions.length - 1;
 
   useEffect(() => {
     if (current) {
@@ -105,14 +104,6 @@ export default function QuizClient(): JSX.Element {
         },
       };
     });
-
-    // 最後の問題かどうかの判定を追加
-    if (currentIndex >= questions.length - 1) {
-      // 少し待ってから結果ページに遷移
-      setTimeout(() => {
-        router.push(`/result`);
-      }, 100); // 100msの遅延
-    }
   };
 
   /**
@@ -120,6 +111,13 @@ export default function QuizClient(): JSX.Element {
    */
   const handleFinish = (): void => {
     router.push("/");
+  };
+
+  /**
+   * 結果ページ表示ハンドラ
+   */
+  const handleShowResult = (): void => {
+    router.push(`/result`);
   };
 
   if (!current) {
@@ -165,6 +163,8 @@ export default function QuizClient(): JSX.Element {
           explanation={current.explanation}
           onNext={handleNext}
           onFinish={handleFinish}
+          onShowResult={handleShowResult}
+          isLastQuestion={isLastQuestion}
         />
       )}
 

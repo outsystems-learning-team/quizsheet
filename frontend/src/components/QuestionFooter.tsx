@@ -9,6 +9,10 @@ export interface QuestionFooterProps {
   onNext: () => void;
   /** 「終了」押下時に呼ばれる関数 */
   onFinish: () => void;
+  /** 「結果を見る」押下時に呼ばれる関数 */
+  onShowResult: () => void;
+  /** 最後の問題かどうか */
+  isLastQuestion: boolean;
 }
 
 /**
@@ -17,12 +21,16 @@ export interface QuestionFooterProps {
  * @param props.explanation 解説文
  * @param props.onNext 次の問題へ進むハンドラ
  * @param props.onFinish クイズを終了するハンドラ
+ * @param props.onShowResult 「結果を見る」ハンドラ
+ * @param props.isLastQuestion 最後の問題かどうか
  * @returns JSX.Element
  */
 export const QuestionFooter: FC<QuestionFooterProps> = ({
   explanation,
   onNext,
   onFinish,
+  onShowResult,
+  isLastQuestion,
 }) => {
   return (
     <div className="space-y-4 max-w-2xl mx-auto p-6">
@@ -37,10 +45,10 @@ export const QuestionFooter: FC<QuestionFooterProps> = ({
         </button>
         <button
           type="button"
-          onClick={onNext}
+          onClick={isLastQuestion ? onShowResult : onNext}
           className="px-6 py-2 rounded-lg text-white bg-[#fa173d] hover:opacity-90 transition"
         >
-          次へ
+          {isLastQuestion ? "結果を見る" : "次へ"}
         </button>
       </div>
       {/* 解説表示エリア */}
