@@ -89,10 +89,7 @@ export default function StartPage() {
       }
 
       const finalNumQuestions = selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current);
-
-      // クイズデータの取得
-      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}&limit=${finalNumQuestions}`);
-
+      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}&limit=${finalNumQuestions}&order=${questionOrder}`)
       if (!quizzesRes.ok) {
         const errorText = await quizzesRes.text(); // Read response body as text for more info
         throw new Error(`Failed to fetch quizzes: ${quizzesRes.status} ${quizzesRes.statusText} - ${errorText}`);
@@ -109,15 +106,8 @@ export default function StartPage() {
         return;
       }
 
-      /* --- シャッフル & 切り詰め --- */
-      const processedQuestions =
-        questionOrder === "random"
-          ? [...questions].sort(() => Math.random() - 0.5)
-          : questions;
-
-      const finalQs: Question[] = processedQuestions.slice(0, selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current));
-
-      setQuestions(finalQs);
+      setQuestions(questions);
+      
       router.push(`/quiz`);
     } catch (e) {
       console.error("Error in handleStart:", e); // Log the full error
