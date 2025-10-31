@@ -6,8 +6,12 @@ export async function GET(request: Request) {
   const quizName = searchParams.get('quiz_name');
   const categories = searchParams.get('categories');
   const limit = searchParams.get('limit');
+  const order = searchParams.get('order');
+
 
   try {
+    // 1.カテゴリと一致するIDを取得する
+
     const conditions = [];
     if (quizName) {
       conditions.push(sql`quiz_name = ${quizName}`);
@@ -24,51 +28,87 @@ export async function GET(request: Request) {
       whereClause = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
     }
 
-    let query = sql`
-      SELECT *
-      FROM quiz_list
+    const idQuery = sql`
+      SELECT id 
+      FROM quiz_list 
       ${whereClause}
-      ORDER BY id ASC
     `;
 
-    if (limit) {
-      query = sql`${query} LIMIT ${parseInt(limit, 10)}`;
+    const idsResult = await db.execute(idQuery);
+    const allIds = (idsResult.rows as { id: number }[]).map((row) => row.id);
+  
+
+    if (allIds.length === 0) {
+      return NextResponse.json([]);
+    }
+    
+      //　2.randomが指定されている時のみ、配列をランダムにソートする
+      let processedIDs = allIds;
+      if (order === 'random'){
+        processedIDs = [...allIds].sort(() => Math.random() -0.5);
+      }
+    
+    const limitNum = limit ? parseInt(limit, 10) : allIds.length;
+    const selectedIds = processedIDs.slice(0, limitNum);
+  
+    if (selectedIds.length === 0) {
+    return NextResponse.json([]);
     }
 
-    const result = await db.execute(query);
-    const quizData: QuizRow[] = result.rows as QuizRow[];
+    // 3.出題順がランダムになるように調整
+    let orderByCase;
+    let finalQuery;
 
-    // ... (rest of the formatting logic remains the same)
-    type QuizRow = {
-      id: number;
-      quiz_name: string;
-      category: string;
-      question: string;
-      choice1: string | null;
-      choice2: string | null;
-      choice3: string | null;
-      choice4: string | null;
-      answer: string | number;
-      explanation: string;
-    };
-    const formattedQuizData = quizData.map((row: QuizRow) => {
-      const choices = [row.choice1, row.choice2, row.choice3, row.choice4].filter(
-        (choice) => typeof choice === 'string' && choice.trim() !== ''
-      );
-      let answerIndex: number;
-      if (typeof row.answer === 'number') {
-        answerIndex = row.answer - 1;
-      } else if (typeof row.answer === 'string') {
-        const parsedAnswer = parseInt(row.answer, 10);
-        if (!isNaN(parsedAnswer)) {
-          answerIndex = parsedAnswer - 1;
+    if (order === 'random' && selectedIds.length > 0) {
+      const caseStatements = selectedIds.map((id, index) => sql`WHEN id = ${id} THEN ${index + 1}`);
+      orderByCase = sql`ORDER BY CASE ${sql.join(caseStatements, sql` `)} END`;
+
+      finalQuery = sql`
+        SELECT * 
+        FROM quiz_list 
+        WHERE id IN (${sql.join(selectedIds,sql`, `)})
+        ${orderByCase}
+    `;}else{
+        //randomの指定がない時はカテゴリ順、IDの昇順に取得し、出題する
+        finalQuery = sql`
+          SELECT ql.* 
+          FROM quiz_list ql
+          LEFT JOIN category_list cl ON ql.category = cl.category_name AND ql.quiz_name = cl.quiz_name
+          WHERE ql.id IN (${sql.join(selectedIds,sql`, `)})
+          ORDER BY cl.id ASC, ql.id ASC;
+        `
+      }
+     
+      const result = await db.execute(finalQuery);
+
+  type QuizRow = {
+        id: number;
+        quiz_name: string;
+        category: string;
+        question: string;
+        choice1: string | null;
+        choice2: string | null;
+        choice3: string | null;
+        choice4: string | null;
+        answer: string | number;
+        explanation: string;
+      };
+      const quizData: QuizRow[] = result.rows as QuizRow[];
+  
+      const formattedQuizData = quizData.map((row) => {
+        const choices = [row.choice1, row.choice2, row.choice3, row.choice4].filter(
+          (choice): choice is string => typeof choice === 'string' && choice.trim() !== ''
+        );
+        let answerIndex: number;
+        if (typeof row.answer === 'number') {
+          answerIndex = row.answer - 1;
+        } else if (typeof row.answer === 'string') {
+          const parsedAnswer = parseInt(row.answer, 10);
+          answerIndex = !isNaN(parsedAnswer) ? parsedAnswer - 1 : -1;
         } else {
           answerIndex = -1;
         }
-      } else {
-        answerIndex = -1;
-      }
-
+     
       return {
         id: row.id,
         quizName: row.quiz_name,
@@ -84,5 +124,4 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching quizzes:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
-  }
-}
+  }}
