@@ -8,7 +8,10 @@ export async function GET(request: Request) {
   const limit = searchParams.get('limit');
   const order = searchParams.get('order');
 
+
   try {
+    // 1.カテゴリと一致するIDを取得する
+
     const conditions = [];
     if (quizName) {
       conditions.push(sql`quiz_name = ${quizName}`);
@@ -25,24 +28,34 @@ export async function GET(request: Request) {
       whereClause = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
     }
 
-    const idQuery = sql`SELECT id FROM quiz_list ${whereClause}`;
+    const idQuery = sql`
+      SELECT id 
+      FROM quiz_list 
+      ${whereClause}
+    `;
+
     const idsResult = await db.execute(idQuery);
     const allIds = (idsResult.rows as { id: number }[]).map((row) => row.id);
   
+
     if (allIds.length === 0) {
       return NextResponse.json([]);
     }
-  
-    // IDが格納されている配列をシャッフルする
-    const shuffledIds = allIds.sort(() => Math.random() - 0.5);
-    //指定した問題数までスライス
+    
+      //　2.randomが指定されている時のみ、配列をランダムにソートする
+      let processedIDs = allIds;
+      if (order === 'random'){
+        processedIDs = [...allIds].sort(() => Math.random() -0.5);
+      }
+    
     const limitNum = limit ? parseInt(limit, 10) : allIds.length;
-    const selectedIds = shuffledIds.slice(0, limitNum);
+    const selectedIds = processedIDs.slice(0, limitNum);
   
     if (selectedIds.length === 0) {
     return NextResponse.json([]);
     }
 
+    // 3.出題順がランダムになるように調整
     let orderByCase;
     let finalQuery;
 
@@ -56,12 +69,13 @@ export async function GET(request: Request) {
         WHERE id IN (${sql.join(selectedIds,sql`, `)})
         ${orderByCase}
     `;}else{
-        //randomの指定がない時はIDの昇順に取得し、出題する
+        //randomの指定がない時はカテゴリ順、IDの昇順に取得し、出題する
         finalQuery = sql`
-          SELECT * 
-          FROM quiz_list 
-          WHERE id IN (${sql.join(selectedIds,sql`, `)})
-          ORDER BY id ASC;
+          SELECT ql.* 
+          FROM quiz_list ql
+          LEFT JOIN category_list cl ON ql.category = cl.category_name AND ql.quiz_name = cl.quiz_name
+          WHERE ql.id IN (${sql.join(selectedIds,sql`, `)})
+          ORDER BY cl.id ASC, ql.id ASC;
         `
       }
      
@@ -110,5 +124,4 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching quizzes:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
-  }
-}
+  }}
