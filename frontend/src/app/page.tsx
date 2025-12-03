@@ -22,7 +22,7 @@ import { Question } from "@shared/types";
 
 /**
  * スタートページコンポーネント
- * クイズの開始設定（問題数、シート、カテゴリ選択）を提供します。
+ * クイズの開始設定（問題数、シート、カテゴリ選択）を提供
  * @returns {JSX.Element} スタートページの UI 要素
  */
 export default function StartPage() {
@@ -89,10 +89,7 @@ export default function StartPage() {
       }
 
       const finalNumQuestions = selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current);
-
-      // クイズデータの取得
-      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}&limit=${finalNumQuestions}`);
-
+      const quizzesRes = await fetch(`/api/quizzes?quiz_name=${encodeURIComponent(activeQuizName)}&categories=${encodeURIComponent(selectedCategories.join(','))}&limit=${finalNumQuestions}&order=${questionOrder}`);
       if (!quizzesRes.ok) {
         const errorText = await quizzesRes.text(); // Read response body as text for more info
         throw new Error(`Failed to fetch quizzes: ${quizzesRes.status} ${quizzesRes.statusText} - ${errorText}`);
@@ -109,15 +106,8 @@ export default function StartPage() {
         return;
       }
 
-      /* --- シャッフル & 切り詰め --- */
-      const processedQuestions =
-        questionOrder === "random"
-          ? [...questions].sort(() => Math.random() - 0.5)
-          : questions;
+      setQuestions(questions);
 
-      const finalQs: Question[] = processedQuestions.slice(0, selectedNumQuestionsOptionRef.current === "free" ? freeNumQuestionsRef.current : Number(selectedNumQuestionsOptionRef.current));
-
-      setQuestions(finalQs);
       router.push(`/quiz`);
     } catch (e) {
       console.error("Error in handleStart:", e); // Log the full error
