@@ -44,8 +44,14 @@ export default function QuizClient(): JSX.Element {
    * 次の問題へ進むハンドラ
    */
   const handleNext = (): void => {
-    setSelected(null);
-    setCurrentIndex((i) => i + 1);
+    //最終問題を解いたら結果へ遷移する
+    if (currentIndex >= questions.length - 1) {
+      router.push(`/result`);
+    } else {
+      //そうでないときは、選択肢をnullに設定し、currnetIndexを1増やす
+      setSelected(null);
+      setCurrentIndex((i) => i + 1);
+    }
   };
 
   const handleAnswer = async (selectedIndex: number) => {
@@ -105,14 +111,6 @@ export default function QuizClient(): JSX.Element {
         },
       };
     });
-
-    // 最後の問題かどうかの判定を追加
-    if (currentIndex >= questions.length - 1) {
-      // 少し待ってから結果ページに遷移
-      setTimeout(() => {
-        router.push(`/result`);
-      }, 100); // 100msの遅延
-    }
   };
 
   /**
@@ -130,9 +128,9 @@ export default function QuizClient(): JSX.Element {
     <>
       <div className="mb-4 flex flex-wrap justify-center gap-3 max-w-2xl mx-auto px-4">
         <div className="w-32 bg-primary-bg border border-border-color px-3 py-2 rounded-lg text-center">
-          <p className="text-xs whitespace-nowrap">回答数</p>
+          <p className="text-xs whitespace-nowrap">問題番号</p>
           <p className="font-bold text-sm whitespace-nowrap">
-            {answeredCount} / {questions.length}
+            {currentIndex + 1} / {questions.length}
           </p>
         </div>
         <div className="w-32 bg-primary-bg border border-border-color px-3 py-2 rounded-lg text-center">
