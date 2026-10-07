@@ -1,9 +1,9 @@
-import { pgTable, text, varchar, timestamp, integer, primaryKey, uuid, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, timestamp, integer, serial, primaryKey, uuid, boolean } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import type { AdapterAccount } from '@auth/core/adapters';
 
 export const quiz_list = pgTable('quiz_list', {
-  id: integer('id').primaryKey(),
+  id: serial('id').primaryKey(),
   quiz_name: varchar('quiz_name', { length: 256 }),
   category: varchar('category', { length: 100 }),
   question: text('question'),
